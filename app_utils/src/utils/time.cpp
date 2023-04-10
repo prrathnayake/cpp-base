@@ -42,14 +42,28 @@ void utils::Time::printNowTime()
     std::cout << ltm->tm_sec << std::endl;
 }
 
-void utils::Time::holdThread(int seconds)
+void utils::Time::holdSeconds(int secs)
 {
+    long long int pre = utils::Time::getEpocTimeInMilliseconds();
     bool hold = true;
-    uint64_t pre = getEpocTimeInMicroseconds();
     while (hold)
     {
-        uint64_t now = getEpocTimeInMicroseconds();
-        if ((int)(now - pre) == (seconds * 1000000))
+        long long int now = utils::Time::getEpocTimeInMilliseconds();
+        if (now == (pre + (secs * 1000)))
+        {
+            hold = false;
+        }
+    }
+}
+
+void utils::Time::holdMiliseconds(int miliseconds)
+{
+    long long int pre = utils::Time::getEpocTimeInMicroseconds();
+    bool hold = true;
+    while (hold)
+    {
+        long long int now = utils::Time::getEpocTimeInMicroseconds();
+        if (now == (pre + (miliseconds * 1000)))
         {
             hold = false;
         }

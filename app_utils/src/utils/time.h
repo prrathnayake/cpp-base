@@ -12,6 +12,7 @@ namespace utils
         static uint64_t getEpocTimeInSeconds();
         static uint64_t getEpocTimeInMinutes();
         static void printNowTime();
-        static void holdThread(int seconds);
+        static void holdSeconds(int secs);
+        static void holdMiliseconds(int miliseconds);
     };
 }

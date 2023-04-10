@@ -33,12 +33,12 @@ int main()
     rabbitMQ::RabbitMQconsumer *rabbitMQconsumer = new rabbitMQ::RabbitMQconsumer();
     pool.addTask("consumer", std::bind(consumeMessage, rabbitMQconsumer, url, queue));
 
-    utils::Time::holdThread(5);
+    utils::Time::holdSeconds(5);
 
     rabbitMQ::RabbitMQprocuder *rabbitMQproducer = new rabbitMQ::RabbitMQprocuder();
     pool.addTask("producer", std::bind(sendMessage, rabbitMQproducer, url, exchange, queue));
 
-    utils::Time::holdThread(20);
+    utils::Time::holdSeconds(20);
 
     pool.joinAll();
     return 0;
