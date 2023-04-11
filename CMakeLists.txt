@@ -16,7 +16,7 @@ file(GLOB files
 add_executable(${PROJECT_NAME} ${files})
 
 target_include_directories(${PROJECT_NAME}
-     PUBLIC app_kafka_library/src
+     PUBLIC app_kafka/src
      PUBLIC app_utils/src
      PUBLIC app_rabbitMQ/src)
 
