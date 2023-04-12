@@ -10,5 +10,4 @@ class kafkaRecipe(ConanFile):
         base.name = "app_utils"
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "utils/*"
-        base.requires = "app_utils/1.0"
-        base.foldername = "utils"
+
