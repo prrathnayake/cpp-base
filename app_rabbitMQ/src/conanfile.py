@@ -1,7 +1,6 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
 
-
 class rabbitMQRecipe(ConanFile):
     python_requires = "cpp-tools/1.0"
     python_requires_extend = "cpp-tools.baseRecipe"

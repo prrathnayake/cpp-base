@@ -12,9 +12,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 target_link_libraries(${PROJECT_NAME} RdKafka::rdkafka++)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "kafka/index.h")
-install(TARGETS ${PROJECT_NAME} DESTINATION "."
-     PUBLIC_HEADER DESTINATION include
+install(
+     DIRECTORY "${CMAKE_SOURCE_DIR}/kafka"
+     DESTINATION "include" 
+     FILES_MATCHING 
+     PATTERN "*.h" 
+)
+
+install(TARGETS ${PROJECT_NAME}
      RUNTIME DESTINATION bin
      ARCHIVE DESTINATION lib
      LIBRARY DESTINATION lib)

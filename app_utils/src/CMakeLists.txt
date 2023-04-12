@@ -8,9 +8,14 @@ file(GLOB files
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "utils/index.h")
-install(TARGETS ${PROJECT_NAME} DESTINATION "."
-     PUBLIC_HEADER DESTINATION include
+install(
+     DIRECTORY "${CMAKE_SOURCE_DIR}/utils" 
+     DESTINATION "include" 
+     FILES_MATCHING 
+     PATTERN "*.h" 
+)
+
+install(TARGETS ${PROJECT_NAME}
      RUNTIME DESTINATION bin
      ARCHIVE DESTINATION lib
      LIBRARY DESTINATION lib)

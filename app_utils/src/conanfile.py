@@ -1,7 +1,5 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.files import copy
-
 
 class kafkaRecipe(ConanFile):
     python_requires = "cpp-tools/1.0"
@@ -13,3 +11,4 @@ class kafkaRecipe(ConanFile):
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "utils/*"
         base.requires = "app_utils/1.0"
+        base.foldername = "utils"

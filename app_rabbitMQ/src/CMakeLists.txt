@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25.2)
-project(app_rabbitMQ)
+project(app_rabbitmq)
 
 file(GLOB files
      "*/*.cpp"
@@ -12,9 +12,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 target_link_libraries(${PROJECT_NAME} amqpcpp)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "rabbitMQ/index.h")
-install(TARGETS ${PROJECT_NAME} DESTINATION "."
-     PUBLIC_HEADER DESTINATION include
+install(
+     DIRECTORY "${CMAKE_SOURCE_DIR}/rabbitMQ"
+     DESTINATION "include" 
+     FILES_MATCHING 
+     PATTERN "*.h" 
+)
+
+install(TARGETS ${PROJECT_NAME}
      RUNTIME DESTINATION bin
      ARCHIVE DESTINATION lib
      LIBRARY DESTINATION lib)
