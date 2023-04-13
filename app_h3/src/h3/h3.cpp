@@ -3,7 +3,7 @@
 
 #include "h3.h"
 
-void h3::H3::getH3Index(double latitude, double longitude, int resolution)
+H3Index h3::H3::getH3Index(double latitude, double longitude, int resolution)
 {
     LatLng location;
     location.lat = degsToRads(latitude);
@@ -13,5 +13,26 @@ void h3::H3::getH3Index(double latitude, double longitude, int resolution)
     {
         std::cout << "Failed\n";
     }
-    std::cout << indexed << "\n";
+    return indexed;
+}
+
+CellBoundary h3::H3::getBoundaries(H3Index indexed)
+{
+    CellBoundary boundary;
+    if (cellToBoundary(indexed, &boundary) != E_SUCCESS)
+    {
+        std::cout << "Failed\n";
+    }
+    return boundary;
+}
+
+LatLng h3::H3::getCenter(H3Index indexed)
+{
+    LatLng center;
+    if (cellToLatLng(indexed, &center) != E_SUCCESS)
+    {
+        std::cout << "Failed\n";
+    }
+
+    return center;
 }
