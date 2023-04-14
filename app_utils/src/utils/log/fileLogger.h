@@ -3,12 +3,12 @@
 #include <fstream>
 
 namespace utils{
-    class Log{
+    class FileLogger: public Logger{
         private:
             std::fstream logFile;
         public:
-            Log();
-            ~Log();
+            FileLogger();
+            ~FileLogger();
             void info(std::string message);
     };
 }
