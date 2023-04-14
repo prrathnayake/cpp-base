@@ -6,6 +6,9 @@ namespace utils
 {
     class Time
     {
+    private:
+        static std::string validTime(int i);
+
     public:
         static uint64_t getEpocTimeInNanoseconds();
         static uint64_t getEpocTimeInMicroseconds();

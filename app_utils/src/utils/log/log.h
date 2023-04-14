@@ -9,6 +9,6 @@ namespace utils{
         public:
             Log();
             ~Log();
-            void printLog(std::string message);
+            void info(std::string message);
     };
 }

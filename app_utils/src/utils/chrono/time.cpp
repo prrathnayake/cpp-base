@@ -70,13 +70,37 @@ void utils::Time::holdMiliseconds(int miliseconds)
     }
 }
 
+std::string utils::Time::validTime(int i)
+{
+    std::string str;
+    if (i < 10)
+    {
+        return str = "00" + std::to_string(i);
+    }
+    else if (i < 100)
+    {
+        return str = "0" + std::to_string(i);
+    }
+    else
+    {
+        return str = std::to_string(i);
+    }
+}
+
 std::string utils::Time::logTime()
 {
     time_t now = time(0);
     struct tm tstruct;
     char log[80];
     tstruct = *localtime(&now);
-    strftime(log, sizeof(log), "[%Y-%m-%d %X]", &tstruct);
 
-    return log;
+    strftime(log, sizeof(log), "%Y-%m-%d %T", &tstruct);
+
+    int mili = getEpocTimeInMilliseconds() % 1000;
+    int micro = getEpocTimeInMicroseconds() % 1000;
+    int nano = getEpocTimeInNanoseconds() % 1000;
+
+    std::string time = "[" + std::string(log) + ":" + validTime(mili) + ":" + validTime(micro) + ":" + validTime(nano) + "]";
+
+    return time;
 }

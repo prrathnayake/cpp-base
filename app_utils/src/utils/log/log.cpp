@@ -13,7 +13,7 @@ utils::Log::~Log()
     logFile.close();
 }
 
-void utils::Log::printLog(std::string message)
+void utils::Log::info(std::string message)
 {
-    logFile << utils::Time::logTime() << " \n";
+    logFile << utils::Time::logTime() << " [INFO] " << message <<"\n";
 }
