@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "log.h"
+#include "../index.h"
 
 utils::Log::Log()
 {
@@ -15,5 +15,5 @@ utils::Log::~Log()
 
 void utils::Log::printLog(std::string message)
 {
-    logFile << message << " \n";
+    logFile << utils::Time::logTime() << " \n";
 }

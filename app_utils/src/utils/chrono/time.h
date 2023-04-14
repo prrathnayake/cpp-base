@@ -15,5 +15,6 @@ namespace utils
         static void printNowTime();
         static void holdSeconds(int secs);
         static void holdMiliseconds(int miliseconds);
+        static std::string logTime();
     };
 }

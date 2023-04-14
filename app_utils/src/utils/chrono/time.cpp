@@ -69,3 +69,14 @@ void utils::Time::holdMiliseconds(int miliseconds)
         }
     }
 }
+
+std::string utils::Time::logTime()
+{
+    time_t now = time(0);
+    struct tm tstruct;
+    char log[80];
+    tstruct = *localtime(&now);
+    strftime(log, sizeof(log), "[%Y-%m-%d %X]", &tstruct);
+
+    return log;
+}
