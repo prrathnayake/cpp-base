@@ -2,6 +2,8 @@
 #include <vector>
 #include <openssl/sha.h>
 
+#include <utils/index.h>
+
 #include "blockchain.h"
 #include "block.h"
 #include "transtraction.h"
@@ -17,7 +19,7 @@ void blockchain::Blockchain::addNewTranstraction(blockchain::Transtraction trans
     if (blocks.size() == 0)
     {
         blockchain::Transtraction trans("privateKey", "publicKey", "key", "0");
-        blockchain::Block bl("preHash", trans, "timestamp");
+        blockchain::Block bl("preHash", trans, utils::Time::logTime());
         hash = mine(bl);
 
         for (int i = 0; i < databases.size(); i++)
@@ -28,7 +30,7 @@ void blockchain::Blockchain::addNewTranstraction(blockchain::Transtraction trans
 
     if (transtraction.isValidateSignature())
     {
-        blockchain::Block block(hash, transtraction, "timestamp");
+        blockchain::Block block(hash, transtraction, utils::Time::logTime());
         hash = mine(block);
         for (int i = 0; i < databases.size(); i++)
         {
