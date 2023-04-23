@@ -10,5 +10,5 @@ class rabbitMQRecipe(ConanFile):
         base.name = "app_rabbitmq"
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "rabbitMQ/*"
-        base.requires = "app_utils/1.0@pasan/testing"
+
  
