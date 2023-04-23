@@ -10,4 +10,5 @@ class blockchainRecipe(ConanFile):
         base.name = "app_blockchain"
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "blockchain/*"
+        base.requires = "app_utils/1.0@pasan/testing"
 

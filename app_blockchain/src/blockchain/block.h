@@ -17,8 +17,9 @@ namespace blockchain
 
     public:
         Block(std::string previousHash, blockchain::Transtraction transtraction, std::string timestamp);
-        void generateHash();
         std::string toString();
         std::string toStringWithTranstraction();
+        int getNonce();
+        void setNonce(int nonce);
     };
 }

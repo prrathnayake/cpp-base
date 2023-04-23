@@ -18,22 +18,27 @@ void blockchain::Blockchain::addNewTranstraction(blockchain::Transtraction trans
     {
         blockchain::Transtraction trans("privateKey", "publicKey", "key", "0");
         blockchain::Block bl("preHash", trans, "timestamp");
-        blocks.push_back(bl);
+        hash = mine(bl);
 
         for (int i = 0; i < databases.size(); i++)
         {
             databases[i].addData("key", "0");
         }
-        hash = getHash(trans.toString());
     }
 
-    blockchain::Block block(hash, transtraction, "timestamp");
-    blocks.push_back(block);
-    for (int i = 0; i < databases.size(); i++)
+    if (transtraction.isValidateSignature())
     {
-        databases[i].addData(transtraction.getKey(), transtraction.getValue());
+        blockchain::Block block(hash, transtraction, "timestamp");
+        hash = mine(block);
+        for (int i = 0; i < databases.size(); i++)
+        {
+            databases[i].addData(transtraction.getKey(), transtraction.getValue());
+        }
     }
-    hash = getHash(transtraction.toString());
+    else
+    {
+        std::cout << "Transtraction is not valid\n";
+    }
 }
 
 void blockchain::Blockchain::printData(blockchain::Database database)
@@ -46,10 +51,12 @@ void blockchain::Blockchain::printData(blockchain::Database database)
 
 void blockchain::Blockchain::printBlockchain()
 {
+    std::cout << "\nBlockchain\n";
+    std::cout << "===========\n\n";
     for (int i = 0; i < blocks.size(); i++)
     {
         std::cout << "Block : " << i << "\n";
-        std::cout << blocks[i].toStringWithTranstraction() << "\n";
+        std::cout << blocks[i].toString() << "\n";
     }
 }
 
@@ -66,7 +73,28 @@ std::string blockchain::Blockchain::getHash(std::string data)
         std::sprintf(hex_byte, "%02x", hash[i]);
         hex_hash += hex_byte;
     }
-
     // Print the hash
     return hex_hash;
+}
+
+std::string blockchain::Blockchain::mine(blockchain::Block block)
+{
+    std::cout << "mining.......\n";
+    std::string hash = getHash(block.toStringWithTranstraction());
+
+    bool loop = true;
+    while (loop)
+    {
+        if (hash.rfind("0000", 0) == 0)
+        {
+            loop = false;
+            blocks.push_back(block);
+            return hash;
+        }
+        else
+        {
+            block.setNonce(block.getNonce() + 1);
+            hash = getHash(block.toStringWithTranstraction());
+        }
+    }
 }

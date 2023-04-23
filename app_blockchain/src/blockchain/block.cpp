@@ -9,16 +9,24 @@ blockchain::Block::Block(std::string previousHash, blockchain::Transtraction tra
     ts = timestamp;
 }
 
-void blockchain::Block::generateHash() {}
-
 std::string blockchain::Block::toString()
 {
-    std::string str = "Nonce : " + std::to_string(nonce) + "\n" + "Pre Hash : " + preHash + "\n" + "Timestamp : " + ts + "\n" + "[Transtraction]" + "\n";
+    std::string str = "Nonce : " + std::to_string(getNonce()) + "\n" + "Pre Hash : " + preHash + "\n" + "Timestamp : " + ts + "\n" + "[Transtraction]" + "\n";
     return str;
 }
 
 std::string blockchain::Block::toStringWithTranstraction()
 {
-    std::string str = "Nonce : " + std::to_string(nonce) + "\n" + "Pre Hash : " + preHash + "\n" + "Timestamp : " + ts + "\n" + "[Transtraction]" + "\n" + trans.toString() + "\n";
+    std::string str = "Nonce : " + std::to_string(getNonce()) + "\n" + "Pre Hash : " + preHash + "\n" + "Timestamp : " + ts + "\n" + "[Transtraction]" + "\n" + trans.toString() + "\n";
     return str;
+}
+
+int blockchain::Block::getNonce()
+{
+    return nonce;
+}
+
+void blockchain::Block::setNonce(int n)
+{
+    nonce = n;
 }
