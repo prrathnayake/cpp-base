@@ -4,10 +4,13 @@
 #include <bitset>
 #include <map>
 
-std::string decimalToBinary(int n);
+namespace algorithms
+{
+    std::string decimalToBinary(int n);
 
-std::string decimalToBinary(unsigned long n);
+    std::string decimalToBinary(unsigned long n);
 
-std::string hexToBinary(std::string h);
+    std::string hexToBinary(std::string h);
 
-std::string binaryToHex(std::string binaryString);
+    std::string binaryToHex(std::string binaryString);
+}

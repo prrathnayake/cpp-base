@@ -2,7 +2,7 @@
 
 #include "binaryOperators.h"
 
-void sizeValidate(std::string *binary1, std::string *binary2)
+void algorithms::sizeValidate(std::string *binary1, std::string *binary2)
 {
     std::string add;
     int bin1Len = binary1->size();
@@ -26,7 +26,7 @@ void sizeValidate(std::string *binary1, std::string *binary2)
     }
 }
 
-void size32Validate(std::string *binary)
+void algorithms::size32Validate(std::string *binary)
 {
     std::string add;
     int len = binary->size();
@@ -40,7 +40,7 @@ void size32Validate(std::string *binary)
     }
 }
 
-std::string AND(std::string binary1, std::string binary2)
+std::string algorithms::AND(std::string binary1, std::string binary2)
 {
     std::string result;
 
@@ -59,7 +59,7 @@ std::string AND(std::string binary1, std::string binary2)
     return result;
 }
 
-std::string OR(std::string binary1, std::string binary2)
+std::string algorithms::OR(std::string binary1, std::string binary2)
 {
     std::string result;
 
@@ -78,7 +78,7 @@ std::string OR(std::string binary1, std::string binary2)
     return result;
 }
 
-std::string XNOR(std::string binary1, std::string binary2)
+std::string algorithms::XNOR(std::string binary1, std::string binary2)
 {
     std::string result;
 
@@ -97,7 +97,7 @@ std::string XNOR(std::string binary1, std::string binary2)
     return result;
 }
 
-std::string XOR(std::string binary1, std::string binary2)
+std::string algorithms::XOR(std::string binary1, std::string binary2)
 {
     std::string result = "";
 
@@ -116,7 +116,7 @@ std::string XOR(std::string binary1, std::string binary2)
     return result;
 }
 
-std::string NOT(std::string binary)
+std::string algorithms::NOT(std::string binary)
 {
     std::string result;
 

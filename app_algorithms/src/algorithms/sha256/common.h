@@ -2,4 +2,7 @@
 #include <iostream>
 #include <bitset>
 
-std::string toBinary(std::string const &str);
+namespace algorithms
+{
+    std::string toBinary(std::string const &str);
+}

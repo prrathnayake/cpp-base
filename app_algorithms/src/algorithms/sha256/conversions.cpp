@@ -23,7 +23,7 @@ std::map<std::string, char> binaryToHexMap = {
     {"1110", 'e'},
     {"1111", 'f'}};
 
-std::string decimalToBinary(int n)
+std::string algorithms::decimalToBinary(int n)
 {
     std::string binary = "";
     std::string tem = "";
@@ -42,7 +42,7 @@ std::string decimalToBinary(int n)
     return binary;
 }
 
-std::string decimalToBinary(unsigned long n)
+std::string algorithms::decimalToBinary(unsigned long n)
 {
     std::string binary = "";
     std::string tem = "";
@@ -61,7 +61,7 @@ std::string decimalToBinary(unsigned long n)
     return binary;
 }
 
-std::string hexToBinary(std::string h)
+std::string algorithms::hexToBinary(std::string h)
 {
     std::stringstream ss;
     ss << std::hex << h;
@@ -71,7 +71,7 @@ std::string hexToBinary(std::string h)
     return b.to_string();
 }
 
-std::string binaryToHex(std::string binaryString)
+std::string algorithms::binaryToHex(std::string binaryString)
 {
     while (binaryString.size() % 4 != 0)
     {
