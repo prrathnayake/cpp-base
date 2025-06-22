@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.25.2)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(app_database)
 
-file(GLOB_RECURSE files
-     "*/*/*.cpp"
+file(GLOB files
+     "*/*.cpp"
 )
 
 find_package(PkgConfig REQUIRED)
@@ -51,13 +53,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 # Install headers and library
 install(
-     DIRECTORY "${CMAKE_SOURCE_DIR}/database" 
-     DESTINATION "include" 
-     FILES_MATCHING PATTERN "*.h"
+    DIRECTORY "${CMAKE_SOURCE_DIR}/database" 
+    DESTINATION "include" 
+    FILES_MATCHING PATTERN "*.h"
 )
 
 install(TARGETS ${PROJECT_NAME}
-     RUNTIME DESTINATION bin
-     ARCHIVE DESTINATION lib
-     LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
 )
