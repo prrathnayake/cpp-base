@@ -3,8 +3,8 @@
 #include <fstream>
 
 namespace utils{
-    class Logger{
+    class Files{
         public:
-            virtual void info(std::string message) = 0;
+            void getCurrentFilePath();
     };
 }

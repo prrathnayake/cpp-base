@@ -6,3 +6,4 @@
 #include "log/fileLogger.h"
 #include "log/consoleLogger.h"
 #include "error/error.h"
+#include "file/file.h"

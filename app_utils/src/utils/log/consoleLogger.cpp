@@ -1,7 +1,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "../index.h"
+#include "../chrono/time.h"
+#include "consoleLogger.h"
 
 void utils::ConsoleLogger::info(std::string message)
 {

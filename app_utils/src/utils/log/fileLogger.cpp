@@ -1,24 +1,22 @@
+#include "fileLogger.h"
 #include <iostream>
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
 #include <filesystem>
-#include <mutex>
+#include <sys/file.h> // for flock
 
-#include "../index.h" // or wherever FileLogger is declared
+#include "fileLogger.h"
+#include "../chrono/time.h"
 
 namespace fs = std::filesystem;
+
 std::mutex utils::FileLogger::logMutex;
 
-utils::FileLogger::FileLogger(const std::string& path)
+utils::FileLogger::FileLogger(const std::string &path)
     : logFilePath(path)
 {
     fs::path logPath(logFilePath);
-    if (fs::exists(logFilePath))
-    {
-        fs::remove(logFilePath);
-    }
-
     if (logPath.has_parent_path())
     {
         fs::create_directories(logPath.parent_path());
@@ -35,16 +33,15 @@ void utils::FileLogger::log(MessageCode level, const std::string &message)
 void utils::FileLogger::logMeta(MessageCode level, const std::string &message,
                                 const char *file, int line, const char *func)
 {
-    std::string metadata = " => " + std::string(file) + ":" + std::to_string(line) +
+    std::string metadata = std::string(file) + ":" + std::to_string(line) +
                            " in " + func;
-    std::string full_message = utils::Time::logTime() + " [" + levelToString(level) + "] " +
-                               metadata + " | " + message;
+    std::string full_message = utils::Time::logTime() +" [" + levelToString(level) + "] " + metadata + " | " + message;
     print(levelToString(level), full_message);
 }
 
 void utils::FileLogger::print(const std::string &levelStr, const std::string &message)
 {
-    std::lock_guard<std::mutex> lock(logMutex); // thread-safe
+    std::lock_guard<std::mutex> lock(logMutex);
 
     int fd = open(logFilePath.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (fd == -1)
@@ -53,20 +50,22 @@ void utils::FileLogger::print(const std::string &levelStr, const std::string &me
         return;
     }
 
-    struct flock fl{};
-    fl.l_type = F_WRLCK;
-    fl.l_whence = SEEK_SET;
+    // Lock the file (blocking)
+    if (flock(fd, LOCK_EX) == -1)
+    {
+        perror("flock");
+        close(fd);
+        return;
+    }
 
-    fcntl(fd, F_SETLKW, &fl); // lock the file
-
-    std::string full_message = utils::Time::logTime() + " [" + levelStr + "] " + message + "\n";
+    std::string full_message = message + "\n";
     if (write(fd, full_message.c_str(), full_message.size()) == -1)
     {
         perror("write");
     }
 
-    fl.l_type = F_UNLCK;
-    fcntl(fd, F_SETLK, &fl); // unlock
+    // Unlock the file
+    flock(fd, LOCK_UN);
 
     close(fd);
 }

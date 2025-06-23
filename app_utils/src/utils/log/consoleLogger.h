@@ -1,6 +1,8 @@
-#pragma one
+#pragma once
 #include <iostream>
 #include <fstream>
+
+#include "logger.h"
 
 namespace utils
 {
