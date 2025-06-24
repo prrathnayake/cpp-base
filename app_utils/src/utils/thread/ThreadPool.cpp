@@ -1,82 +1,83 @@
-#include <iostream>
 #include "ThreadPool.h"
 
-void utils::ThreadPool::addThread(const std::string &threadName)
-{
-    if (threads.count(threadName) > 0)
-    {
-        std::cerr << "Thread with name " << threadName << " already exists.\n";
-        return;
-    }
+#include <vector>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <future>
+#include <functional>
+#include <atomic>
+#include <iostream>
 
-    threads[threadName] = std::thread(&ThreadPool::threadFunc, this, threadName);
+utils::ThreadPool::ThreadPool() : stop(false)
+{
+    unsigned int hardwareThreads = std::thread::hardware_concurrency();
+    if (hardwareThreads == 0)
+        hardwareThreads = 2;
+
+    size_t numThreads = std::max(1u, hardwareThreads - 1);
+    std::cout << "Starting thread pool with " << numThreads << " threads.\n";
+
+    for (size_t i = 0; i < numThreads; ++i)
+    {
+        workers.emplace_back([this]()
+                             { this->workerThread(); });
+    }
 }
 
-void utils::ThreadPool::addTask(const std::string &threadName, std::function<void()> task)
+utils::ThreadPool::ThreadPool(size_t numThreads) : stop(false)
 {
-    if (threads.count(threadName) == 0)
+    unsigned int maxThreads = std::thread::hardware_concurrency();
+    if (maxThreads == 0)
+        maxThreads = 2;
+
+    if (numThreads > maxThreads)
     {
-        std::cerr << "Thread " << threadName << " does not exist.\n";
-        return;
+        std::cout << "[Warning] Requested " << numThreads
+                  << " threads, but system supports a maximum of " << maxThreads
+                  << ". Using " << maxThreads << " threads instead.\n";
+        numThreads = maxThreads;
     }
 
-    std::unique_lock<std::mutex> lock(taskMutexes[threadName]);
-    if (tasks[threadName].size() > 0)
+    std::cout << "Starting thread pool with " << numThreads << " threads.\n";
+    for (size_t i = 0; i < numThreads; ++i)
     {
-        std::cerr << "Thread " << threadName << " is already executing a task.\n";
-        return;
+        workers.emplace_back([this]()
+                             { this->workerThread(); });
     }
-
-    tasks[threadName].push(task);
-    taskCVs[threadName].notify_one();
 }
 
-void utils::ThreadPool::joinAll()
+utils::ThreadPool::~ThreadPool()
 {
     stop = true;
-    std::cerr << "Current Thread count -  " << threads.size() << std::endl;
-    for (auto &pair : threads)
+    condition.notify_all();
+
+    for (std::thread &worker : workers)
     {
-        if (tasks[pair.first].size() > 0)
-        {
-            std::cerr << "Thread " << pair.first << " is already executing a task.\n";
-            return;
-        }
-        if (pair.second.joinable())
-        {
-            std::cout << "Join Thread " << pair.first << std::endl;
-            pair.second.join();
-        }
-        std::cout << "joined" << std::endl;
+        if (worker.joinable())
+            worker.join();
     }
 }
 
-void utils::ThreadPool::threadFunc(const std::string &threadName)
+void utils::ThreadPool::workerThread()
 {
-    while (!stop)
+    while (true)
     {
-        std::unique_lock<std::mutex> lock(taskMutexes[threadName]);
-        while (tasks[threadName].empty() && !stop)
+        std::function<void()> task;
+
         {
-            taskCVs[threadName].wait(lock);
+            std::unique_lock<std::mutex> lock(queueMutex);
+            condition.wait(lock, [this]()
+                           { return stop || !tasks.empty(); });
+
+            if (stop && tasks.empty())
+                return;
+
+            task = std::move(tasks.front());
+            tasks.pop();
         }
 
-        if (tasks[threadName].empty())
-        {
-            continue;
-        }
-
-        auto task = tasks[threadName].front();
-        tasks[threadName].pop();
-        lock.unlock();
-
-        try
-        {
-            task();
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Exception caught in thread " << threadName << ": " << e.what() << std::endl;
-        }
+        task();
     }
 }

@@ -1,30 +1,62 @@
 #pragma once
-#include <iostream>
-#include <string>
+
+#include <vector>
 #include <queue>
+#include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <future>
 #include <functional>
-#include <thread>
-#include <unordered_map>
+#include <atomic>
+#include <iostream>
 
 namespace utils
 {
     class ThreadPool
     {
     public:
-        ThreadPool() : stop(false) {}
-        void addThread(const std::string &threadName);
-        void addTask(const std::string &threadName, std::function<void()> task);
-        void joinAll();
+        ThreadPool();                           // Automatically chooses optimal thread count
+        explicit ThreadPool(size_t numThreads); // Manual override
+        ~ThreadPool();
+
+        // Enqueue a task and get its future result
+        template <class F, class... Args>
+        auto enqueue(F &&f, Args &&...args)
+            -> std::future<typename std::invoke_result<F, Args...>::type>;
 
     private:
-        std::unordered_map<std::string, std::thread> threads;
-        std::unordered_map<std::string, std::queue<std::function<void()>>> tasks;
-        std::unordered_map<std::string, std::mutex> taskMutexes;
-        std::unordered_map<std::string, std::condition_variable> taskCVs;
-        bool stop;
+        std::vector<std::thread> workers;
+        std::queue<std::function<void()>> tasks;
 
-        void threadFunc(const std::string &threadName);
+        std::mutex queueMutex;
+        std::condition_variable condition;
+        std::atomic<bool> stop;
+
+        void workerThread();
+    };
+
+    // Template must be in header
+    template <class F, class... Args>
+    auto ThreadPool::enqueue(F &&f, Args &&...args)
+        -> std::future<typename std::invoke_result<F, Args...>::type>
+    {
+        using return_type = typename std::invoke_result<F, Args...>::type;
+
+        auto task = std::make_shared<std::packaged_task<return_type()>>(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+        std::future<return_type> result = task->get_future();
+
+        {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            if (stop)
+                throw std::runtime_error("enqueue on stopped ThreadPool");
+
+            tasks.emplace([task]()
+                          { (*task)(); });
+        }
+
+        condition.notify_one();
+        return result;
     };
 }
