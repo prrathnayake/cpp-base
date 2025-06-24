@@ -4,6 +4,7 @@
 #include "thread/ThreadPool.h"
 #include "log/logger.h"
 #include "log/fileLogger.h"
+#include "log/singletonLogger.h"
 #include "log/consoleLogger.h"
 #include "error/error.h"
 #include "file/file.h"
