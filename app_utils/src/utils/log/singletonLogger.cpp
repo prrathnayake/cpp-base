@@ -44,7 +44,7 @@ void utils::SingletonLogger::logMeta(MessageCode level, const std::string &messa
                                      const char *file, int line, const char *func)
 {
     std::string metadata = std::string(file) + ":" + std::to_string(line) + " in " + func;
-    std::string full_message = utils::Time::logTime() + " [" + metadata + "] " + message;
+    std::string full_message = utils::Time::logTime() + " | " + message + " | " + metadata;
     printLog(full_message);
     printConsole(full_message);
 }
