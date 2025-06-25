@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
 
-struct MYSQL;
+#include "MySQLConnection.h"
+#include <string>
 
 namespace database
 {
@@ -9,24 +9,23 @@ namespace database
     class MySQLDatabase
     {
     public:
-        MySQLDatabase();
+        MySQLDatabase(const std::string &host, const std::string &user,
+                      const std::string &password, unsigned int port = 3306);
+
         ~MySQLDatabase();
 
-        bool connect(const std::string &host, const std::string &user,
-                     const std::string &password, const std::string &db, unsigned int port);
-
-        bool isConnected() const;
-        void disconnect();
-
-        bool executeUpdate(const std::string &query); // INSERT, UPDATE, DELETE
-        bool executeQuery(const std::string &query);  // SELECT
         bool initializeDatabase(const std::string &dbName);
         bool runSqlScript(const std::string &filePath);
-
+        bool executeUpdate(const std::string &query);
+        bool executeQuery(const std::string &query);
         std::string escapeString(const std::string &input);
 
+        void setConnection(MySQLConnection *conn);
+        MySQLConnection *getConnection() const;
+
     private:
-        MYSQL *conn;
+        MySQLConnection *conn;
+        std::string dbName;
     };
 
-};
+} // namespace database
