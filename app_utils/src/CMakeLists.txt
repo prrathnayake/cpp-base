@@ -7,8 +7,13 @@ file(GLOB files
      "*/*/*.cpp"
 )
 
+find_package(nlohmann_json REQUIRED)
+
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
 
 install(
      DIRECTORY "${CMAKE_SOURCE_DIR}/utils" 
