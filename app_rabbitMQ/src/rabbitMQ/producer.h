@@ -1,6 +1,6 @@
 #pragma once
 #include "iostream"
-#include "AMQPcpp.h"
+#include <AMQPcpp.h>
 
 namespace rabbitMQ
 {

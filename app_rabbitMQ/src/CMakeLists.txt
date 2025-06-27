@@ -10,6 +10,7 @@ find_library(AMQP_CPP_LIBRARY NAMES amqpcpp PATHS /usr/local/lib REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${AMQP_CPP_LIBRARY}
 amqpcpp)

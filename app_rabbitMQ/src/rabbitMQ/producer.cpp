@@ -1,6 +1,4 @@
-#pragma once
 #include "iostream"
-#include "AMQPcpp.h"
 #include "producer.h"
 
 rabbitMQ::RabbitMQprocuder::RabbitMQprocuder()

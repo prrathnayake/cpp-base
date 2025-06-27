@@ -1,6 +1,4 @@
-#pragma once
 #include "iostream"
-#include "AMQPcpp.h"
 #include "consumer.h"
 
 rabbitMQ::RabbitMQconsumer::RabbitMQconsumer() {}
