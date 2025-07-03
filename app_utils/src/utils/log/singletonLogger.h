@@ -21,7 +21,7 @@ namespace utils
         {
             INFO = 0,
             ERROR = 1,
-            WARN = 2,
+            WARNING = 2,
             DEBUG = 3
         };
 
@@ -34,7 +34,7 @@ namespace utils
         ~SingletonLogger();
 
         void printLog(const std::string& message);
-        void printConsole(const std::string& message);
+        void printConsole(MessageCode level, const std::string& message);
 
         static std::mutex logMutex;
         std::string logFilePath;

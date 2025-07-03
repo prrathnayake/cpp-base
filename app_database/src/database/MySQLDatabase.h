@@ -3,6 +3,8 @@
 
 #include "MySQLConnection.h"
 #include <string>
+#include <vector>
+#include <map>
 
 namespace database
 {
@@ -22,6 +24,7 @@ namespace database
         bool executeUpdate(const std::string &query);
         bool executeDelete(const std::string &query);
         bool executeSelect(const std::string &query);
+        std::vector<std::map<std::string, std::string>> fetchRows(const std::string &query);
 
         std::string escapeString(const std::string &input);
 

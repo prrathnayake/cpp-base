@@ -118,6 +118,40 @@ namespace database {
         return true;
     }
 
+    std::vector<std::map<std::string, std::string>> MySQLDatabase::fetchRows(const std::string &query) {
+    connect();
+    std::vector<std::map<std::string, std::string>> results;
+
+    if (mysql_query(conn->getRawConnection(), query.c_str())) {
+        std::cerr << "SELECT failed: " << mysql_error(conn->getRawConnection()) << "\n";
+        return results;
+    }
+
+    MYSQL_RES *result = mysql_store_result(conn->getRawConnection());
+    if (!result) {
+        std::cerr << "Failed to retrieve SELECT result: " << mysql_error(conn->getRawConnection()) << "\n";
+        return results;
+    }
+
+    int num_fields = mysql_num_fields(result);
+    MYSQL_ROW row;
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+
+    while ((row = mysql_fetch_row(result))) {
+        std::map<std::string, std::string> record;
+        for (int i = 0; i < num_fields; ++i) {
+            std::string key = fields[i].name;
+            std::string value = row[i] ? row[i] : "";
+            record[key] = value;
+        }
+        results.push_back(record);
+    }
+
+    mysql_free_result(result);
+    return results;
+}
+
+
     bool MySQLDatabase::runSqlScript(const std::string &filePath) {
         connect();
 

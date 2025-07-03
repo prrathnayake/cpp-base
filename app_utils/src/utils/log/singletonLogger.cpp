@@ -35,18 +35,42 @@ utils::SingletonLogger::SingletonLogger(const std::string &path)
 
 utils::SingletonLogger::~SingletonLogger() = default;
 
+// Helper to convert enum to string
+static std::string messageCodeToString( utils::SingletonLogger::MessageCode level)
+{
+    switch (level)
+    {
+    case utils::SingletonLogger::MessageCode::ERROR:
+        return "ERROR";
+    case utils::SingletonLogger::MessageCode::WARNING:
+        return "WARNING";
+    case utils::SingletonLogger::MessageCode::INFO:
+        return "INFO";
+    case utils::SingletonLogger::MessageCode::DEBUG:
+        return "DEBUG";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 void utils::SingletonLogger::log(MessageCode level, const std::string &message)
 {
-    printLog(message);
+    std::string levelStr = messageCodeToString(level);
+    std::string timestamp = utils::Time::logTime();
+    std::string full_message = timestamp + " [ " + levelStr + " ] " + message;
+    printLog(full_message);
+    printConsole(level, full_message);
 }
 
 void utils::SingletonLogger::logMeta(MessageCode level, const std::string &message,
                                      const char *file, int line, const char *func)
 {
     std::string metadata = std::string(file) + ":" + std::to_string(line) + " in " + func;
-    std::string full_message = utils::Time::logTime() + " | " + message + " | " + metadata;
+    std::string levelStr = messageCodeToString(level);
+    std::string timestamp = utils::Time::logTime();
+    std::string full_message = timestamp + " [ " + levelStr + " ] " + message + " | " + metadata;
     printLog(full_message);
-    printConsole(full_message);
+    printConsole(level, full_message);
 }
 
 void utils::SingletonLogger::printLog(const std::string &message)
@@ -77,7 +101,31 @@ void utils::SingletonLogger::printLog(const std::string &message)
     close(fd);
 }
 
-void utils::SingletonLogger::printConsole(const std::string &message)
+void utils::SingletonLogger::printConsole(utils::SingletonLogger::MessageCode level, const std::string &message)
 {
-    std::cout << message << "\n";
+#ifdef DEBUG_MODE
+    bool debugEnabled = true;
+#else
+    bool debugEnabled = false;
+#endif
+
+    switch (level)
+    {
+    case utils::SingletonLogger::MessageCode::ERROR:
+        std::cout << "\033[1;31m[ERROR] " << message << "\033[0m" << std::endl;
+        break;
+    case utils::SingletonLogger::MessageCode::WARNING:
+        std::cout << "\033[1;33m[WARNING] " << message << "\033[0m" << std::endl;
+        break;
+    case utils::SingletonLogger::MessageCode::INFO:
+        std::cout << "[INFO] " << message << std::endl;
+        break;
+    case utils::SingletonLogger::MessageCode::DEBUG:
+        if (debugEnabled)
+            std::cout << "\033[1;36m[DEBUG] " << message << "\033[0m" << std::endl;
+        break;
+    default:
+        std::cout << message << std::endl;
+        break;
+    }
 }
