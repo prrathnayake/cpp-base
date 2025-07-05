@@ -80,6 +80,12 @@ std::string algorithms::hashComputation(std::string binary)
     std::vector<std::vector<std::string>> blocks = blockDecomposition(binary);
     std::string a, b, c, d, e, f, g, h, T1, T2;
 
+    // Move H inside the function to reset for every call
+    std::string H[8] = {
+        "0x6a09e667", "0xbb67ae85", "0x3c6ef372", "0xa54ff53a",
+        "0x510e527f", "0x9b05688c", "0x1f83d9ab", "0x5be0cd19"
+    };
+
     for (int i = 0; i < blocks.size(); i++)
     {
         a = hexToBinary(H[0]);
@@ -90,6 +96,7 @@ std::string algorithms::hashComputation(std::string binary)
         f = hexToBinary(H[5]);
         g = hexToBinary(H[6]);
         h = hexToBinary(H[7]);
+
         for (int j = 0; j < blocks[i].size(); j++)
         {
             T1 = additionModulo(additionModulo(additionModulo(additionModulo(Ch(e, f, g), Sigma1(e)), h), hexToBinary(K[j])), blocks[i][j]);
@@ -103,6 +110,7 @@ std::string algorithms::hashComputation(std::string binary)
             b = a;
             a = additionModulo(T1, T2);
         }
+
         H[0] = binaryToHex(additionModulo(hexToBinary(H[0]), a));
         H[1] = binaryToHex(additionModulo(hexToBinary(H[1]), b));
         H[2] = binaryToHex(additionModulo(hexToBinary(H[2]), c));
@@ -112,5 +120,6 @@ std::string algorithms::hashComputation(std::string binary)
         H[6] = binaryToHex(additionModulo(hexToBinary(H[6]), g));
         H[7] = binaryToHex(additionModulo(hexToBinary(H[7]), h));
     }
+
     return H[0] + H[1] + H[2] + H[3] + H[4] + H[5] + H[6] + H[7];
 }

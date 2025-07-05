@@ -15,16 +15,23 @@ namespace utils
     class ThreadPool
     {
     public:
-        ThreadPool();                           // Automatically chooses optimal thread count
-        explicit ThreadPool(size_t numThreads); // Manual override
+        // Singleton with optional thread count
+        static ThreadPool &instance(size_t threadCount = 0);
+
+        // Deleted copy/move
+        ThreadPool(const ThreadPool &) = delete;
+        ThreadPool &operator=(const ThreadPool &) = delete;
+
         ~ThreadPool();
 
-        // Enqueue a task and get its future result
         template <class F, class... Args>
         auto enqueue(F &&f, Args &&...args)
             -> std::future<typename std::invoke_result<F, Args...>::type>;
 
     private:
+        explicit ThreadPool(size_t numThreads = 0); // Default or user-defined
+        void workerThread();
+
         std::vector<std::thread> workers;
         std::queue<std::function<void()>> tasks;
 
@@ -32,10 +39,11 @@ namespace utils
         std::condition_variable condition;
         std::atomic<bool> stop;
 
-        void workerThread();
+        static std::unique_ptr<ThreadPool> instance_;
+        static std::once_flag initFlag;
     };
 
-    // Template must be in header
+    // Enqueue implementation
     template <class F, class... Args>
     auto ThreadPool::enqueue(F &&f, Args &&...args)
         -> std::future<typename std::invoke_result<F, Args...>::type>
@@ -58,5 +66,5 @@ namespace utils
 
         condition.notify_one();
         return result;
-    };
+    }
 }

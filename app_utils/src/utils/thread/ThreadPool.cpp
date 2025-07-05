@@ -1,66 +1,54 @@
 #include "ThreadPool.h"
 
-#include <vector>
-#include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <future>
-#include <functional>
-#include <atomic>
-#include <iostream>
+using namespace utils;
 
-utils::ThreadPool::ThreadPool() : stop(false)
+std::unique_ptr<ThreadPool> ThreadPool::instance_;
+std::once_flag ThreadPool::initFlag;
+
+ThreadPool& ThreadPool::instance(size_t threadCount)
 {
-    unsigned int hardwareThreads = std::thread::hardware_concurrency();
-    if (hardwareThreads == 0)
-        hardwareThreads = 2;
+    std::call_once(initFlag, [&]() {
+        instance_.reset(new ThreadPool(threadCount));  // ✅ works inside the class
+    });
 
-    size_t numThreads = std::max(1u, hardwareThreads - 1);
-    std::cout << "Starting thread pool with " << numThreads << " threads.\n";
+    return *instance_;
+}
+
+ThreadPool::ThreadPool(size_t numThreads) : stop(false)
+{
+    if (numThreads == 0)
+    {
+        unsigned int hardwareThreads = std::thread::hardware_concurrency();
+        numThreads = std::max(1u, hardwareThreads > 1 ? hardwareThreads - 1 : 1);
+    }
+
+    std::clog << "[ThreadPool] Starting with " << numThreads << " threads.\n";
 
     for (size_t i = 0; i < numThreads; ++i)
     {
-        workers.emplace_back([this]()
-                             { this->workerThread(); });
+        workers.emplace_back([this]() { this->workerThread(); });
     }
 }
 
-utils::ThreadPool::ThreadPool(size_t numThreads) : stop(false)
+ThreadPool::~ThreadPool()
 {
-    unsigned int maxThreads = std::thread::hardware_concurrency();
-    if (maxThreads == 0)
-        maxThreads = 2;
-
-    if (numThreads > maxThreads)
     {
-        std::cout << "[Warning] Requested " << numThreads
-                  << " threads, but system supports a maximum of " << maxThreads
-                  << ". Using " << maxThreads << " threads instead.\n";
-        numThreads = maxThreads;
+        std::unique_lock<std::mutex> lock(queueMutex);
+        stop = true;
     }
 
-    std::cout << "Starting thread pool with " << numThreads << " threads.\n";
-    for (size_t i = 0; i < numThreads; ++i)
-    {
-        workers.emplace_back([this]()
-                             { this->workerThread(); });
-    }
-}
-
-utils::ThreadPool::~ThreadPool()
-{
-    stop = true;
     condition.notify_all();
 
-    for (std::thread &worker : workers)
+    for (std::thread& worker : workers)
     {
         if (worker.joinable())
             worker.join();
     }
+
+    std::clog << "[ThreadPool] Shutdown complete.\n";
 }
 
-void utils::ThreadPool::workerThread()
+void ThreadPool::workerThread()
 {
     while (true)
     {
@@ -68,8 +56,7 @@ void utils::ThreadPool::workerThread()
 
         {
             std::unique_lock<std::mutex> lock(queueMutex);
-            condition.wait(lock, [this]()
-                           { return stop || !tasks.empty(); });
+            condition.wait(lock, [this]() { return stop || !tasks.empty(); });
 
             if (stop && tasks.empty())
                 return;
@@ -78,6 +65,17 @@ void utils::ThreadPool::workerThread()
             tasks.pop();
         }
 
-        task();
+        try
+        {
+            task();
+        }
+        catch (const std::exception& e)
+        {
+            std::clog << "[ThreadPool] Exception in task: " << e.what() << '\n';
+        }
+        catch (...)
+        {
+            std::clog << "[ThreadPool] Unknown exception in task.\n";
+        }
     }
 }

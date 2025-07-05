@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "MySQLConnection.h"
@@ -43,4 +42,4 @@ namespace database
         unsigned int port_;
     };
 
-} // namespace database
+}
