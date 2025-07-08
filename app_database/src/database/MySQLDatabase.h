@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MySQLConnection.h"
+#include "ConnectionPool.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -14,8 +15,6 @@ namespace database
         MySQLDatabase(const std::string &host, const std::string &user,
                       const std::string &password, unsigned int port = 3306);
 
-        ~MySQLDatabase();
-
         bool initializeDatabase(const std::string &dbName);
         bool runSqlScript(const std::string &filePath);
 
@@ -27,14 +26,8 @@ namespace database
 
         std::string escapeString(const std::string &input);
 
-        void setConnection(MySQLConnection *conn);
-        MySQLConnection *getConnection() const;
-
-        void connect();
-        void disconnect();
-
     private:
-        MySQLConnection *conn;
+        std::shared_ptr<ConnectionPool> pool_;
         std::string host_;
         std::string user_;
         std::string password_;

@@ -9,34 +9,13 @@ namespace database {
     MySQLDatabase::MySQLDatabase(const std::string &host, const std::string &user,
                                  const std::string &password, unsigned int port)
         : host_(host), user_(user), password_(password), port_(port), databaseName_("") {
-        conn = new MySQLConnection();
-        if (!conn->connect(host, user, password, "", port)) {
-            std::cerr << "Initial connection to MySQL server failed.\n";
-        }
-    }
 
-    MySQLDatabase::~MySQLDatabase() {
-        disconnect();
-    }
+        pool_ = std::make_shared<ConnectionPool>(host, user, password, port, 10);
 
-    void MySQLDatabase::connect() {
-        if (!conn || !conn->isConnected()) {
-            conn = new MySQLConnection();
-            if (!conn->connect(host_, user_, password_, databaseName_, port_)) {
-                std::cerr << "Reconnection to MySQL server failed.\n";
-            }
-        }
-    }
-
-    void MySQLDatabase::disconnect() {
-        if (conn) {
-            conn->disconnect();
-            delete conn;
-            conn = nullptr;
-        }
     }
 
     bool MySQLDatabase::initializeDatabase(const std::string &dbName) {
+        auto conn = pool_->getConnection();
         databaseName_ = dbName;
         std::string createDbQuery = "CREATE DATABASE IF NOT EXISTS `" + dbName + "`";
         if (mysql_query(conn->getRawConnection(), createDbQuery.c_str())) {
@@ -53,16 +32,8 @@ namespace database {
         return true;
     }
 
-    void MySQLDatabase::setConnection(MySQLConnection *connection) {
-        conn = connection;
-    }
-
-    MySQLConnection *MySQLDatabase::getConnection() const {
-        return conn;
-    }
-
     bool MySQLDatabase::executeInsert(const std::string &query) {
-        connect();
+        auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str())) {
             std::cerr << "INSERT failed: " << mysql_error(conn->getRawConnection()) << "\n";
             return false;
@@ -72,7 +43,7 @@ namespace database {
     }
 
     bool MySQLDatabase::executeUpdate(const std::string &query) {
-        connect();
+        auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str())) {
             std::cerr << "UPDATE failed: " << mysql_error(conn->getRawConnection()) << "\n";
             return false;
@@ -82,7 +53,7 @@ namespace database {
     }
 
     bool MySQLDatabase::executeDelete(const std::string &query) {
-        connect();
+        auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str())) {
             std::cerr << "DELETE failed: " << mysql_error(conn->getRawConnection()) << "\n";
             return false;
@@ -92,7 +63,7 @@ namespace database {
     }
 
     bool MySQLDatabase::executeSelect(const std::string &query) {
-        connect();
+        auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str())) {
             std::cerr << "SELECT failed: " << mysql_error(conn->getRawConnection()) << "\n";
             return false;
@@ -119,7 +90,7 @@ namespace database {
     }
 
     std::vector<std::map<std::string, std::string>> MySQLDatabase::fetchRows(const std::string &query) {
-    connect();
+    auto conn = pool_->getConnection();
     std::vector<std::map<std::string, std::string>> results;
 
     if (mysql_query(conn->getRawConnection(), query.c_str())) {
@@ -153,7 +124,7 @@ namespace database {
 
 
     bool MySQLDatabase::runSqlScript(const std::string &filePath) {
-        connect();
+        auto conn = pool_->getConnection();
 
         std::ifstream file(filePath);
         if (!file.is_open()) {
@@ -199,7 +170,7 @@ namespace database {
     }
 
     std::string MySQLDatabase::escapeString(const std::string &input) {
-        connect();
+        auto conn = pool_->getConnection();
         std::string escaped;
         escaped.resize(input.size() * 2 + 1);
         unsigned long len = mysql_real_escape_string(conn->getRawConnection(), &escaped[0], input.c_str(), input.length());
@@ -207,4 +178,4 @@ namespace database {
         return escaped;
     }
 
-} // namespace database
+} 

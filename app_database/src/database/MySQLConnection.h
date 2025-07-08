@@ -20,7 +20,7 @@ public:
     MYSQL *getRawConnection() const;
 
 private:
-    MYSQL *conn;
+    MYSQL *conn_;
 };
 
-} // namespace database
+}
