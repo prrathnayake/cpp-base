@@ -8,7 +8,7 @@ namespace kafka
     class ExCosumeCb : public RdKafka::ConsumeCb
     {
     public:
-        void msg_consume(RdKafka::Message *message);
+        std::string msg_consume(RdKafka::Message *message);
 
         void consume_cb(RdKafka::Message &msg, void *opaque);
     };

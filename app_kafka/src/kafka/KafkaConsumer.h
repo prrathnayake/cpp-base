@@ -16,6 +16,8 @@ namespace kafka
         KafkaConsumer(std::string brokers, std::string topics);
 
         void consumeMessages(ExCosumeCb ex_consume_cb);
+        std::string consumeMessage();
+
 
         void stopConsumeMessages();
 

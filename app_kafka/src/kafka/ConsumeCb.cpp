@@ -4,15 +4,14 @@
 
 #include "ConsumeCb.h"
 
-void kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
+std::string kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
 {
     switch (message->err())
     {
     case RdKafka::ERR__TIMED_OUT:
         break;
     case RdKafka::ERR_NO_ERROR:
-        std::cout << std::stoll(static_cast<const char *>(message->payload())) << std::endl;
-        break;
+        return std::string(static_cast<const char *>(message->payload()), message->len());
 
     case RdKafka::ERR__UNKNOWN_TOPIC:
     case RdKafka::ERR__UNKNOWN_PARTITION:
@@ -24,8 +23,9 @@ void kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
     }
 }
 
-void kafka::ExCosumeCb::consume_cb(RdKafka::Message &msg, void *opaque)
-{
-
-    msg_consume(&msg);
+void kafka::ExCosumeCb::consume_cb(RdKafka::Message& msg, void* opaque) {
+    std::string result = msg_consume(&msg);
+    if (!result.empty()) {
+        std::cout << "Received message: " << result << std::endl;
+    }
 }
