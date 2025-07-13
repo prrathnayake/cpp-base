@@ -70,7 +70,7 @@ void KafkaConsumer::consumeMessages(ExCosumeCb ex_consume_cb) {
 }
 
 std::string KafkaConsumer::consumeMessage() {
-    std::unique_ptr<RdKafka::Message> msg(consumer->consume(C_topic, 0, 1000));
+    std::unique_ptr<RdKafka::Message> msg(consumer->consume(C_topic, 0, -1));
     std::string payload;
 
     switch (msg->err()) {
