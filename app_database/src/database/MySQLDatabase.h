@@ -13,7 +13,7 @@ namespace database
     {
     public:
         MySQLDatabase(const std::string &host, const std::string &user,
-                      const std::string &password, unsigned int port = 3306);
+                      const std::string &password, unsigned int port = 3306, const std::string &databaseName = "");
 
         bool initializeDatabase(const std::string &dbName);
         bool runSqlScript(const std::string &filePath);

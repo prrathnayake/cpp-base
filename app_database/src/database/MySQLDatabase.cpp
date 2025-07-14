@@ -8,11 +8,11 @@ namespace database
 {
 
     MySQLDatabase::MySQLDatabase(const std::string &host, const std::string &user,
-                                 const std::string &password, unsigned int port)
-        : host_(host), user_(user), password_(password), port_(port), databaseName_("")
+                                 const std::string &password, unsigned int port, const std::string &databaseName)
+        : host_(host), user_(user), password_(password), port_(port), databaseName_(databaseName)
     {
 
-        pool_ = std::make_shared<ConnectionPool>(host, user, password, port, 10);
+        pool_ = std::make_shared<ConnectionPool>(host_, user_, password_, port_, databaseName_, 10);
     }
 
     bool MySQLDatabase::initializeDatabase(const std::string &dbName)
