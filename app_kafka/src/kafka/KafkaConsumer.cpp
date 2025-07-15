@@ -92,7 +92,14 @@ std::string KafkaConsumer::consumeMessage() {
 
 void KafkaConsumer::stopConsumeMessages() {
     consume = false;
-    std::cout << "Kafka consumer stopping...\n";
+     if (consumer && C_topic) {
+        consumer->stop(C_topic, 0);
+    }
+
+    delete C_topic;
+    delete consumer;
+
+    std::cout << "Kafka consumer destroyed.\n";
 }
 
 KafkaConsumer::~KafkaConsumer() {
