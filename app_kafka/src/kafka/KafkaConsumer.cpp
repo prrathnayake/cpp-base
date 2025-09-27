@@ -1,116 +1,146 @@
-#include <iostream>
-#include <string>
-#include <memory>
-
-#include <librdkafka/rdkafkacpp.h>
-
-#include "ConsumeCb.h"
 #include "KafkaConsumer.h"
 
-namespace kafka {
+#include <iostream>
+#include <memory>
+#include <stdexcept>
 
-KafkaConsumer::KafkaConsumer(std::string brokers, std::string topics) {
-    std::string errstr;
+namespace kafka
+{
+    namespace
+    {
+        void destroyConsumer(RdKafka::Consumer *consumer) noexcept
+        {
+            if (!consumer)
+            {
+                return;
+            }
 
-    // Global config
-    RdKafka::Conf *conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
-    if (conf->set("metadata.broker.list", brokers, errstr) != RdKafka::Conf::CONF_OK) {
-        std::cerr << "Broker config error: " << errstr << std::endl;
-        exit(1);
+            consumer->poll(0);
+            delete consumer;
+        }
+
+        void destroyTopic(RdKafka::Topic *topic) noexcept
+        {
+            delete topic;
+        }
+
+        void setConfigValue(RdKafka::Conf &conf, const std::string &key, const std::string &value)
+        {
+            std::string error;
+            const auto result = conf.set(key, value, error);
+            if (result != RdKafka::Conf::CONF_OK)
+            {
+                throw std::runtime_error("Failed to set '" + key + "': " + error);
+            }
+        }
     }
 
-    if (conf->set("enable.auto.commit", "false", errstr) != RdKafka::Conf::CONF_OK) {
-        std::cerr << "Auto commit config error: " << errstr << std::endl;
-        exit(1);
+    KafkaConsumer::KafkaConsumer(const std::string &brokers, const std::string &topics)
+        : consumer_{nullptr, destroyConsumer}, topic_{nullptr, destroyTopic}
+    {
+        std::string error;
+
+        std::unique_ptr<RdKafka::Conf, std::function<void(RdKafka::Conf *)>> conf{
+            RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL), [](RdKafka::Conf *ptr) { delete ptr; }};
+        if (!conf)
+        {
+            throw std::runtime_error("Failed to create Kafka configuration");
+        }
+
+        setConfigValue(*conf, "metadata.broker.list", brokers);
+        setConfigValue(*conf, "enable.auto.commit", "false");
+        setConfigValue(*conf, "fetch.wait.max.ms", "0");
+
+        RdKafka::Consumer *rawConsumer = RdKafka::Consumer::create(conf.get(), error);
+        if (!rawConsumer)
+        {
+            throw std::runtime_error("Failed to create Kafka consumer: " + error);
+        }
+        consumer_.reset(rawConsumer);
+
+        std::unique_ptr<RdKafka::Conf, std::function<void(RdKafka::Conf *)>> topicConf{
+            RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC), [](RdKafka::Conf *ptr) { delete ptr; }};
+        if (!topicConf)
+        {
+            throw std::runtime_error("Failed to allocate topic configuration");
+        }
+
+        RdKafka::Topic *rawTopic = RdKafka::Topic::create(consumer_.get(), topics, topicConf.get(), error);
+        if (!rawTopic)
+        {
+            throw std::runtime_error("Failed to create Kafka topic: " + error);
+        }
+        topic_.reset(rawTopic);
+
+        const auto startResult = consumer_->start(topic_.get(), 0, RdKafka::Topic::OFFSET_END);
+        if (startResult != RdKafka::ERR_NO_ERROR)
+        {
+            throw std::runtime_error("Failed to start Kafka consumer: " + RdKafka::err2str(startResult));
+        }
+
+        std::clog << "[KafkaConsumer] Connected to topic '" << topics << "'\n";
     }
 
-    if (conf->set("fetch.wait.max.ms", "0", errstr) != RdKafka::Conf::CONF_OK) {
-        std::cerr << "Fetch wait config error: " << errstr << std::endl;
-        exit(1);
+    KafkaConsumer::~KafkaConsumer()
+    {
+        stopConsumeMessages();
     }
 
-    consumer = RdKafka::Consumer::create(conf, errstr);
-    delete conf;
-
-    if (!consumer) {
-        std::cerr << "Failed to create Kafka consumer: " << errstr << std::endl;
-        exit(1);
+    void KafkaConsumer::ensureActive() const
+    {
+        if (!consumer_ || !topic_)
+        {
+            throw std::runtime_error("Kafka consumer is not initialised");
+        }
     }
 
-    // Topic config
-    RdKafka::Conf *tconf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC);
-    C_topic = RdKafka::Topic::create(consumer, topics, tconf, errstr);
-    delete tconf;
+    void KafkaConsumer::consumeMessages(ExCosumeCb &ex_consume_cb, std::chrono::milliseconds timeout)
+    {
+        ensureActive();
 
-    if (!C_topic) {
-        std::cerr << "Failed to create Kafka topic: " << errstr << std::endl;
-        exit(1);
+        while (consume_.load(std::memory_order_acquire))
+        {
+            consumer_->consume_callback(topic_.get(), 0, static_cast<int>(timeout.count()), &ex_consume_cb, nullptr);
+        }
     }
 
-    // Start consumer from beginning (or change to OFFSET_END if preferred)
-    RdKafka::ErrorCode resp = consumer->start(C_topic, 0, RdKafka::Topic::OFFSET_END);
-    if (resp != RdKafka::ERR_NO_ERROR) {
-        std::cerr << "Consumer start failed: " << RdKafka::err2str(resp) << std::endl;
-        exit(1);
-    }
+    std::string KafkaConsumer::consumeMessage(std::chrono::milliseconds timeout)
+    {
+        ensureActive();
 
-    std::cout << "Kafka consumer created and started successfully.\n";
-}
+        std::unique_ptr<RdKafka::Message> message{consumer_->consume(topic_.get(), 0, static_cast<int>(timeout.count()))};
+        if (!message)
+        {
+            throw std::runtime_error("Failed to allocate Kafka message container");
+        }
 
-void KafkaConsumer::consumeMessages(ExCosumeCb ex_consume_cb) {
-    std::cout << "Consuming messages (callback mode)...\n";
-    int use_ccb = 1;
-
-    while (consume) {
-        consumer->consume_callback(C_topic, 0, 1000, &ex_consume_cb, &use_ccb);
-    }
-
-    consumer->stop(C_topic, 0);
-    RdKafka::wait_destroyed(5000);
-}
-
-std::string KafkaConsumer::consumeMessage() {
-    std::unique_ptr<RdKafka::Message> msg(consumer->consume(C_topic, 0, -1));
-    std::string payload;
-
-    switch (msg->err()) {
+        switch (message->err())
+        {
         case RdKafka::ERR_NO_ERROR:
-            payload = std::string(static_cast<const char *>(msg->payload()), msg->len());
-            break;
+            return std::string(static_cast<const char *>(message->payload()), message->len());
 
         case RdKafka::ERR__TIMED_OUT:
-            std::cerr << "Kafka consume timed out.\n";
-            break;
+            return {};
 
         default:
-            std::cerr << "Kafka consume failed: " << msg->errstr() << std::endl;
-            break;
+            throw std::runtime_error("Kafka consume failed: " + message->errstr());
+        }
     }
 
-    return payload;
-}
+    void KafkaConsumer::stopConsumeMessages()
+    {
+        consume_.store(false, std::memory_order_release);
 
-void KafkaConsumer::stopConsumeMessages() {
-    consume = false;
-     if (consumer && C_topic) {
-        consumer->stop(C_topic, 0);
+        if (consumer_ && topic_)
+        {
+            consumer_->stop(topic_.get(), 0);
+            consumer_->poll(0);
+        }
+
+        topic_.reset();
+        consumer_.reset();
+
+        RdKafka::wait_destroyed(5000);
+        std::clog << "[KafkaConsumer] Shutdown complete\n";
     }
-
-    delete C_topic;
-    delete consumer;
-
-    std::cout << "Kafka consumer destroyed.\n";
 }
-
-KafkaConsumer::~KafkaConsumer() {
-    if (consumer && C_topic) {
-        consumer->stop(C_topic, 0);
-    }
-
-    delete C_topic;
-    delete consumer;
-
-    std::cout << "Kafka consumer destroyed.\n";
-}
-
-}  // namespace kafka

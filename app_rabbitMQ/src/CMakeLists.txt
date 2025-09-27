@@ -1,29 +1,48 @@
 cmake_minimum_required(VERSION 3.25.2)
-project(app_rabbitmq)
 
-file(GLOB files
-     "*/*.cpp"
-)
+project(app_rabbitmq LANGUAGES CXX)
 
-find_package(rabbitmq-c REQUIRED)
-find_library(AMQP_CPP_LIBRARY NAMES amqpcpp PATHS /usr/local/lib REQUIRED)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+file(GLOB_RECURSE files
+     "${CMAKE_CURRENT_SOURCE_DIR}/rabbitMQ/*.cpp")
+
+find_package(rabbitmq-c QUIET)
+find_library(AMQP_CPP_LIBRARY NAMES amqpcpp PATHS /usr/local/lib /usr/lib /usr/lib64 /usr/local/lib64)
+find_path(AMQP_CPP_INCLUDE_DIR NAMES amqpcpp.h PATHS /usr/local/include /usr/include)
+
+if(NOT rabbitmq-c_FOUND OR NOT AMQP_CPP_LIBRARY OR NOT AMQP_CPP_INCLUDE_DIR)
+    message(WARNING "RabbitMQ dependencies were not found; building a header-only stub for app_rabbitmq")
+    add_library(${PROJECT_NAME} INTERFACE)
+    target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_compile_definitions(${PROJECT_NAME} INTERFACE APP_RABBITMQ_MISSING_DEPENDENCIES)
+    return()
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${files})
-target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/include)
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${AMQP_CPP_INCLUDE_DIR}
+)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${AMQP_CPP_LIBRARY}
-amqpcpp)
-
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        rabbitmq::rabbitmq
+        ${AMQP_CPP_LIBRARY}
+)
 
 install(
-     DIRECTORY "${CMAKE_SOURCE_DIR}/rabbitMQ"
-     DESTINATION "include" 
-     FILES_MATCHING 
-     PATTERN "*.h" 
+     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rabbitMQ"
+     DESTINATION "include"
+     FILES_MATCHING
+     PATTERN "*.h"
 )
 
 install(TARGETS ${PROJECT_NAME}
+     EXPORT app_rabbitmqTargets
      RUNTIME DESTINATION bin
      ARCHIVE DESTINATION lib
      LIBRARY DESTINATION lib)

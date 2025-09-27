@@ -1,19 +1,24 @@
 #pragma once
-#include "iostream"
+#include <atomic>
+#include <iostream>
+#include <memory>
+
 #include <AMQPcpp.h>
 
 namespace rabbitMQ
 {
-	class RabbitMQconsumer
-	{
-	public:
-		AMQPQueue *rabbitMQqueue;
-		bool consume = true;
+    class RabbitMQconsumer
+    {
+    public:
+        RabbitMQconsumer();
+        virtual ~RabbitMQconsumer();
 
-		RabbitMQconsumer();
-		~RabbitMQconsumer();
-		void consumeMessages(std::string url, std::string queue);
-		virtual void onMessage(std::string message);
-		void stopConsume();
-	};
+        void consumeMessages(const std::string &url, const std::string &queue);
+        virtual void onMessage(const std::string &message);
+        void stopConsume();
+
+    private:
+        std::unique_ptr<AMQPQueue> rabbitMQqueue;
+        std::atomic<bool> consume{true};
+    };
 }

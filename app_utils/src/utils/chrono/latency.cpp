@@ -1,14 +1,17 @@
 #include <iostream>
+#include <utility>
 
 #include "latency.h"
 #include "time.h"
 
 utils::Latency::Latency(std::string functionName)
+    : start(utils::Time::getEpocTimeInNanoseconds()),
+      functionName(std::move(functionName))
 {
-    this->functionName = functionName;
-    start = utils::Time::getEpocTimeInNanoseconds();
 }
+
 utils::Latency::~Latency()
 {
-    std::cout << functionName << " took : " << utils::Time::getEpocTimeInNanoseconds() - start << "nanoseconds" << std::endl;
+    const auto elapsed = utils::Time::getEpocTimeInNanoseconds() - start;
+    std::clog << functionName << " took: " << elapsed << " nanoseconds" << std::endl;
 }

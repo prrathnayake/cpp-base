@@ -1,39 +1,49 @@
-#include "iostream"
 #include "consumer.h"
 
-rabbitMQ::RabbitMQconsumer::RabbitMQconsumer() {}
+#include <stdexcept>
 
-rabbitMQ::RabbitMQconsumer::~RabbitMQconsumer() {}
-
-void rabbitMQ::RabbitMQconsumer::consumeMessages(std::string url, std::string queue)
+namespace rabbitMQ
 {
-    AMQP amqp(url);
-    rabbitMQqueue = amqp.createQueue(queue);
-    rabbitMQqueue->Declare();
+    RabbitMQconsumer::RabbitMQconsumer() = default;
 
-    while (consume)
+    RabbitMQconsumer::~RabbitMQconsumer() = default;
+
+    void RabbitMQconsumer::consumeMessages(const std::string &url, const std::string &queue)
     {
-    again:
-        rabbitMQqueue->Get(AMQP_NOACK);
-
-        AMQPMessage *rabbitMQmessage = rabbitMQqueue->getMessage();
-
-        if (rabbitMQmessage->getMessageCount() > -1)
+        AMQP amqp(url);
+        rabbitMQqueue.reset(amqp.createQueue(queue));
+        if (!rabbitMQqueue)
         {
-            uint32_t j = 0;
-            onMessage(rabbitMQmessage->getMessage(&j));
+            throw std::runtime_error("Failed to create queue: " + queue);
         }
-        else
-            goto again;
+
+        rabbitMQqueue->Declare();
+
+        while (consume.load(std::memory_order_acquire))
+        {
+            rabbitMQqueue->Get(AMQP_NOACK);
+
+            AMQPMessage *rabbitMQmessage = rabbitMQqueue->getMessage();
+            if (!rabbitMQmessage)
+            {
+                continue;
+            }
+
+            if (rabbitMQmessage->getMessageCount() > -1)
+            {
+                uint32_t j = 0;
+                onMessage(rabbitMQmessage->getMessage(&j));
+            }
+        }
     }
-}
 
-void rabbitMQ::RabbitMQconsumer::onMessage(std::string message)
-{
-    std::cout << "Message recieved: " << message << std::endl;
-}
+    void RabbitMQconsumer::onMessage(const std::string &message)
+    {
+        std::cout << "Message received: " << message << std::endl;
+    }
 
-void rabbitMQ::RabbitMQconsumer::stopConsume()
-{
-    consume = false;
+    void RabbitMQconsumer::stopConsume()
+    {
+        consume.store(false, std::memory_order_release);
+    }
 }

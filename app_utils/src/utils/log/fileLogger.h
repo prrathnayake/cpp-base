@@ -3,11 +3,9 @@
 #include <string>
 #include <mutex>
 
-namespace utils
-{
+namespace utils {
 
-    class FileLogger
-    {
+    class FileLogger {
     public:
         explicit FileLogger(const std::string &logFilePath = "log/log.txt");
         ~FileLogger();
@@ -25,7 +23,7 @@ namespace utils
                      const char *file, int line, const char *func);
 
     private:
-        void print(const std::string &levelStr, const std::string &message);
+        void print(const std::string &message);
         static std::string levelToString(MessageCode level);
         std::string logFilePath;
         static std::mutex logMutex;

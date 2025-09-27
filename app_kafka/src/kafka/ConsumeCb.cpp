@@ -21,6 +21,8 @@ std::string kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
     default:
         std::cerr << "Consume failed: " << message->errstr() << std::endl;
     }
+
+    return {};
 }
 
 void kafka::ExCosumeCb::consume_cb(RdKafka::Message& msg, void* opaque) {

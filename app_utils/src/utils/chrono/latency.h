@@ -1,15 +1,13 @@
 #pragma once
-#include <iostream>
-#include <cstdint> 
+#include <cstdint>
+#include <string>
 
-namespace utils
-{
-    class Latency
-    {
+namespace utils {
+    class Latency {
     public:
         uint64_t start;
         std::string functionName;
-        Latency(std::string functionName);
+        explicit Latency(std::string functionName);
         ~Latency();
     };
 }
