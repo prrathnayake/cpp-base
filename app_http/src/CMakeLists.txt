@@ -8,9 +8,25 @@ file(GLOB files
      "*/*.cpp"
 )
 
+find_path(HTTPLIB_INCLUDE_DIR httplib.h PATHS /usr/include /usr/local/include)
+
+if(NOT HTTPLIB_INCLUDE_DIR)
+    message(WARNING "httplib.h not found; building a header-only stub for app_http")
+    add_library(${PROJECT_NAME} INTERFACE)
+    target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_compile_definitions(${PROJECT_NAME} INTERFACE APP_HTTP_MISSING_DEPENDENCIES)
+    target_link_libraries(${PROJECT_NAME} INTERFACE app_utils)
+    return()
+endif()
+
 add_library(${PROJECT_NAME} SHARED ${files})
 
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC include ${HTTPLIB_INCLUDE_DIR})
+
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        app_utils
+)
 
 install(
     DIRECTORY "${CMAKE_SOURCE_DIR}/http" 

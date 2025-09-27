@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
-#include <iostream>
 #include <memory>
+#include <string>
 
 #include <AMQPcpp.h>
 

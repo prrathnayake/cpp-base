@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "utils/log/singletonLogger.h"
+
 
 H3Index h3::H3::getH3Index(double latitude, double longitude, int resolution)
 {
@@ -11,7 +13,12 @@ H3Index h3::H3::getH3Index(double latitude, double longitude, int resolution)
     H3Index indexed;
     if (latLngToCell(&location, resolution, &indexed) != E_SUCCESS)
     {
-        std::cerr << "Failed to convert lat/lng to H3 index\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Failed to convert lat/lng to H3 index",
+            __FILE__,
+            __LINE__,
+            __func__);
     }
     return indexed;
 }
@@ -21,7 +28,12 @@ CellBoundary h3::H3::getBoundaries(H3Index indexed)
     CellBoundary boundary;
     if (cellToBoundary(indexed, &boundary) != E_SUCCESS)
     {
-        std::cerr << "Failed to get cell boundary\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Failed to get cell boundary",
+            __FILE__,
+            __LINE__,
+            __func__);
     }
     return boundary;
 }
@@ -31,7 +43,12 @@ LatLng h3::H3::getCenter(H3Index indexed)
     LatLng center;
     if (cellToLatLng(indexed, &center) != E_SUCCESS)
     {
-        std::cerr << "Failed to get cell center\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Failed to get cell center",
+            __FILE__,
+            __LINE__,
+            __func__);
     }
     return center;
 }
@@ -41,7 +58,12 @@ std::vector<H3Index> h3::H3::getNeighbors(H3Index indexed, int k) {
     std::vector<H3Index> neighbors(maxSize, 0);
 
     if (gridDisk(indexed, k, neighbors.data()) != E_SUCCESS) {
-        std::cerr << "Failed to get neighbors\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Failed to get neighbors",
+            __FILE__,
+            __LINE__,
+            __func__);
         return {};
     }
 
@@ -75,7 +97,12 @@ H3Index h3::H3::fromString(const std::string &indexStr)
     H3Index index = 0;
     if (stringToH3(indexStr.c_str(), &index) != E_SUCCESS)
     {
-        std::cerr << "Failed to convert string to H3Index\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Failed to convert string to H3Index",
+            __FILE__,
+            __LINE__,
+            __func__);
     }
     return index;
 }

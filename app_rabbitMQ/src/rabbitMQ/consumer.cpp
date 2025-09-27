@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "utils/log/singletonLogger.h"
+
 namespace rabbitMQ
 {
     RabbitMQconsumer::RabbitMQconsumer() = default;
@@ -39,7 +41,12 @@ namespace rabbitMQ
 
     void RabbitMQconsumer::onMessage(const std::string &message)
     {
-        std::cout << "Message received: " << message << std::endl;
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "Message received: " + message,
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 
     void RabbitMQconsumer::stopConsume()

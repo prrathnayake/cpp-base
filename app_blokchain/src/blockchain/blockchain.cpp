@@ -1,10 +1,10 @@
-#include <iostream>
 #include <vector>
 #include <openssl/sha.h>
 
 #include "blockchain.h"
 #include "block/block.h"
 #include "transtraction.h"
+#include "utils/log/singletonLogger.h"
 
 blockchain::Blockchain::Blockchain(){
     blockchain::Block genesisBlock;
@@ -13,12 +13,20 @@ blockchain::Blockchain::Blockchain(){
 
 void blockchain::Blockchain::printBlockchain()
 {
-    std::cout << "\nBlockchain\n";
-    std::cout << "===========\n\n";
+    utils::SingletonLogger::instance().logMeta(
+        utils::SingletonLogger::MessageCode::INFO,
+        "\nBlockchain\n===========\n",
+        __FILE__,
+        __LINE__,
+        __func__);
     for (int i = 0; i < blocks.size(); i++)
     {
-        std::cout << "Block : " << i << "\n";
-        std::cout << blocks[i].toString() << "\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "Block : " + std::to_string(i) + "\n" + blocks[i].toString(),
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 }
 

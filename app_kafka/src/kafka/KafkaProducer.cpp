@@ -1,7 +1,8 @@
 #include "KafkaProducer.h"
 
-#include <iostream>
 #include <utility>
+
+#include "utils/log/singletonLogger.h"
 
 namespace kafka
 {
@@ -80,7 +81,12 @@ namespace kafka
         }
 
         producer_.reset(rawProducer);
-        std::clog << "[KafkaProducer] Created producer for " << brokers << "\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "[KafkaProducer] Created producer for " + brokers,
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 
     KafkaProducer::~KafkaProducer()
@@ -91,7 +97,12 @@ namespace kafka
         }
         catch (const std::exception &ex)
         {
-            std::clog << "[KafkaProducer] Exception during flush: " << ex.what() << '\n';
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::WARNING,
+                std::string{"[KafkaProducer] Exception during flush: "} + ex.what(),
+                __FILE__,
+                __LINE__,
+                __func__);
         }
     }
 
@@ -142,15 +153,24 @@ namespace kafka
         const auto flushResult = producer_->flush(static_cast<int>(timeout.count()));
         if (flushResult != RdKafka::ERR_NO_ERROR)
         {
-            std::clog << "[KafkaProducer] Flush finished with error: "
-                      << RdKafka::err2str(flushResult) << '\n';
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::WARNING,
+                std::string{"[KafkaProducer] Flush finished with error: "} + RdKafka::err2str(flushResult),
+                __FILE__,
+                __LINE__,
+                __func__);
         }
 
         const auto remaining = producer_->outq_len();
         if (remaining > 0)
         {
-            std::clog << "[KafkaProducer] " << remaining
-                      << " message(s) remaining in queue after flush." << '\n';
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::WARNING,
+                "[KafkaProducer] " + std::to_string(remaining) +
+                    " message(s) remaining in queue after flush.",
+                __FILE__,
+                __LINE__,
+                __func__);
         }
     }
 }

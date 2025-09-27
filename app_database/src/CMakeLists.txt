@@ -49,6 +49,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SQLITE3_LIBRARIES}
     ${MYSQLCLIENT_LIB}
     ${POSTGRESQL_LIBRARIES}
+    app_utils
 )
 
 # Install headers and library
