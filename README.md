@@ -26,7 +26,7 @@ when building outside the pre-configured containers.
 ### Clone the repository
 
 ```bash
-git clone https://github.com/<your-account>/cpp-base.git
+git clone https://github.com/prrathnayake/cpp-base.git
 cd cpp-base
 ```
 
