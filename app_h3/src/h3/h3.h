@@ -1,12 +1,24 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
+#include <cstdint>
 #include <string>
-#include <h3/h3api.h>
+#include <vector>
 
 namespace h3
 {
+    using H3Index = std::uint64_t;
+
+    struct LatLng
+    {
+        double lat{0.0};
+        double lng{0.0};
+    };
+
+    struct CellBoundary
+    {
+        std::vector<LatLng> verts;
+    };
+
     class H3
     {
     public:
