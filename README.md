@@ -7,7 +7,9 @@ libraries. The repository is designed to be used together with the
 [`ccp-tools`](https://github.com/) environment, which provides reproducible Docker images and helper
 scripts for building the toolchain and third-party dependencies. The
 project demonstrates messaging (Kafka, RabbitMQ), geospatial indexing (H3),
-and general-purpose utilities that can be reused across microservices.
+configuration/authentication/cache helpers, and general-purpose utilities that can be reused across microservices. Every
+library now routes diagnostics through `utils::SingletonLogger`, so consuming projects inherit consistent structured logging out
+of the box.
 
 ## Getting Started
 
@@ -75,6 +77,10 @@ cpp-base/
 ├── app_kafka/        # Kafka producers/consumers built on librdkafka
 ├── app_rabbitMQ/     # RabbitMQ connectors using rabbitmq-c and AMQP-CPP
 ├── app_utils/        # Shared logging, configuration, and system helpers
+├── app_config/       # Layered configuration loading with env resolution
+├── app_auth/         # JWT authentication helpers backed by OpenSSL
+├── app_monitoring/   # Metrics, health checks, and scoped timers
+├── app_cache/        # Cache abstraction with TTL-aware in-memory backend
 ├── CMakeLists.txt    # Top-level CMake entry point
 ├── conanfile.py      # Conan recipe orchestrating sub-packages
 └── README.md         # Project documentation

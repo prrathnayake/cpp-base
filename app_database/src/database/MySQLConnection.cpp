@@ -1,5 +1,6 @@
 #include "MySQLConnection.h"
-#include <iostream>
+
+#include "utils/log/singletonLogger.h"
 
 namespace database {
 
@@ -15,7 +16,12 @@ bool MySQLConnection::connect(const std::string &host, const std::string &user,
     if (!conn_) {
         conn_ = mysql_init(nullptr);
         if (!conn_) {
-            std::cerr << "mysql_init failed\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                "mysql_init failed",
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
     }
@@ -23,7 +29,12 @@ bool MySQLConnection::connect(const std::string &host, const std::string &user,
     if (!mysql_real_connect(conn_, host.c_str(), user.c_str(), password.c_str(),
                             db.empty() ? nullptr : db.c_str(),
                             port, nullptr, 0)) {
-        std::cerr << "MySQL connection failed: " << mysql_error(conn_) << "\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            std::string{"MySQL connection failed: "} + mysql_error(conn_),
+            __FILE__,
+            __LINE__,
+            __func__);
         return false;
     }
 

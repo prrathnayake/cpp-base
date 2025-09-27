@@ -8,6 +8,14 @@ file(GLOB files
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
+find_package(OpenSSL REQUIRED)
+
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        OpenSSL::Crypto
+        app_utils
+)
+
 install(
      DIRECTORY "${CMAKE_SOURCE_DIR}/blockchain" 
      DESTINATION "include" 

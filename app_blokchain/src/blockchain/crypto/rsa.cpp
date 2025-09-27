@@ -1,8 +1,8 @@
-#include <iostream>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 
 #include "rsa.h"
+#include "utils/log/singletonLogger.h"
 
 std::map<std::string, std::string> blockchain::CryptoRSA::generateKeyPair()
 {
@@ -54,7 +54,12 @@ std::string blockchain::CryptoRSA::generateSignature(std::string private_key, st
     unsigned int signature_len;
     if (!RSA_sign(NID_sha256, hash, SHA256_DIGEST_LENGTH, signature_buf, &signature_len, rsa))
     {
-        std::cerr << "Error: could not create signature" << std::endl;
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Error: could not create signature",
+            __FILE__,
+            __LINE__,
+            __func__);
         RSA_free(rsa);
     }
 

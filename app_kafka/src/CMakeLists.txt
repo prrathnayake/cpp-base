@@ -16,6 +16,9 @@ if(NOT RdKafka_FOUND)
     add_library(${PROJECT_NAME} INTERFACE)
     target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(${PROJECT_NAME} INTERFACE APP_KAFKA_MISSING_DEPENDENCIES)
+    if(TARGET app_utils)
+        target_link_libraries(${PROJECT_NAME} INTERFACE app_utils)
+    endif()
     return()
 endif()
 
@@ -28,6 +31,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         RdKafka::rdkafka++
+        app_utils
 )
 
 install(

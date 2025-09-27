@@ -1,8 +1,8 @@
-#include <iostream>
 #include <string>
 #include <librdkafka/rdkafkacpp.h>
 
 #include "ConsumeCb.h"
+#include "utils/log/singletonLogger.h"
 
 std::string kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
 {
@@ -15,11 +15,21 @@ std::string kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
 
     case RdKafka::ERR__UNKNOWN_TOPIC:
     case RdKafka::ERR__UNKNOWN_PARTITION:
-        std::cerr << "Consume failed: " << message->errstr() << std::endl;
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Consume failed: " + message->errstr(),
+            __FILE__,
+            __LINE__,
+            __func__);
 
         break;
     default:
-        std::cerr << "Consume failed: " << message->errstr() << std::endl;
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::ERROR,
+            "Consume failed: " + message->errstr(),
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 
     return {};
@@ -28,6 +38,11 @@ std::string kafka::ExCosumeCb::msg_consume(RdKafka::Message *message)
 void kafka::ExCosumeCb::consume_cb(RdKafka::Message& msg, void* opaque) {
     std::string result = msg_consume(&msg);
     if (!result.empty()) {
-        std::cout << "Received message: " << result << std::endl;
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "Received message: " + result,
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 }

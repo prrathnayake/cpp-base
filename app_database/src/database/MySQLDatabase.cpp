@@ -1,8 +1,9 @@
 
 #include "MySQLDatabase.h"
-#include <iostream>
 #include <fstream>
 #include <sstream>
+
+#include "utils/log/singletonLogger.h"
 
 namespace database
 {
@@ -22,17 +23,32 @@ namespace database
         std::string createDbQuery = "CREATE DATABASE IF NOT EXISTS `" + dbName + "`";
         if (mysql_query(conn->getRawConnection(), createDbQuery.c_str()))
         {
-            std::cerr << "Failed to create database: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"Failed to create database: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
 
         if (!conn->selectDatabase(dbName))
         {
-            std::cerr << "Failed to select database: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"Failed to select database: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
 
-        std::cout << "Database '" << dbName << "' initialized and selected.\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "Database '" + dbName + "' initialized and selected.",
+            __FILE__,
+            __LINE__,
+            __func__);
         return true;
     }
 
@@ -41,10 +57,20 @@ namespace database
         auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str()))
         {
-            std::cerr << "INSERT failed: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"INSERT failed: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
-        std::cout << "INSERT query executed successfully.\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "INSERT query executed successfully.",
+            __FILE__,
+            __LINE__,
+            __func__);
         return true;
     }
 
@@ -53,10 +79,20 @@ namespace database
         auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str()))
         {
-            std::cerr << "UPDATE failed: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"UPDATE failed: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
-        std::cout << "UPDATE query executed successfully.\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "UPDATE query executed successfully.",
+            __FILE__,
+            __LINE__,
+            __func__);
         return true;
     }
 
@@ -65,10 +101,20 @@ namespace database
         auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str()))
         {
-            std::cerr << "DELETE failed: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"DELETE failed: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
-        std::cout << "DELETE query executed successfully.\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "DELETE query executed successfully.",
+            __FILE__,
+            __LINE__,
+            __func__);
         return true;
     }
 
@@ -77,14 +123,24 @@ namespace database
         auto conn = pool_->getConnection();
         if (mysql_query(conn->getRawConnection(), query.c_str()))
         {
-            std::cerr << "SELECT failed: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"SELECT failed: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
 
         MYSQL_RES *result = mysql_store_result(conn->getRawConnection());
         if (!result)
         {
-            std::cerr << "Failed to retrieve SELECT result: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"Failed to retrieve SELECT result: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
 
@@ -93,11 +149,21 @@ namespace database
 
         while ((row = mysql_fetch_row(result)))
         {
+            std::string rowData;
             for (int i = 0; i < num_fields; ++i)
             {
-                std::cout << (row[i] ? row[i] : "NULL") << " ";
+                if (i != 0)
+                {
+                    rowData += ' ';
+                }
+                rowData += (row[i] ? row[i] : "NULL");
             }
-            std::cout << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::INFO,
+                "SELECT row: " + rowData,
+                __FILE__,
+                __LINE__,
+                __func__);
         }
 
         mysql_free_result(result);
@@ -111,14 +177,24 @@ namespace database
 
         if (mysql_query(conn->getRawConnection(), query.c_str()))
         {
-            std::cerr << "SELECT failed: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"SELECT failed: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return results;
         }
 
         MYSQL_RES *result = mysql_store_result(conn->getRawConnection());
         if (!result)
         {
-            std::cerr << "Failed to retrieve SELECT result: " << mysql_error(conn->getRawConnection()) << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                std::string{"Failed to retrieve SELECT result: "} + mysql_error(conn->getRawConnection()),
+                __FILE__,
+                __LINE__,
+                __func__);
             return results;
         }
 
@@ -149,7 +225,12 @@ namespace database
         std::ifstream file(filePath);
         if (!file.is_open())
         {
-            std::cerr << "Could not open SQL script: " << filePath << "\n";
+            utils::SingletonLogger::instance().logMeta(
+                utils::SingletonLogger::MessageCode::ERROR,
+                "Could not open SQL script: " + filePath,
+                __FILE__,
+                __LINE__,
+                __func__);
             return false;
         }
 
@@ -175,8 +256,18 @@ namespace database
             {
                 if (mysql_query(conn->getRawConnection(), statement.c_str()))
                 {
-                    std::cerr << "Failed to execute SQL: " << mysql_error(conn->getRawConnection()) << "\n";
-                    std::cerr << "While executing: " << statement << "\n";
+                    utils::SingletonLogger::instance().logMeta(
+                        utils::SingletonLogger::MessageCode::ERROR,
+                        std::string{"Failed to execute SQL: "} + mysql_error(conn->getRawConnection()),
+                        __FILE__,
+                        __LINE__,
+                        __func__);
+                    utils::SingletonLogger::instance().logMeta(
+                        utils::SingletonLogger::MessageCode::ERROR,
+                        "While executing: " + statement,
+                        __FILE__,
+                        __LINE__,
+                        __func__);
                     return false;
                 }
             }
@@ -187,13 +278,28 @@ namespace database
         {
             if (mysql_query(conn->getRawConnection(), lastStatement.c_str()))
             {
-                std::cerr << "Failed to execute SQL: " << mysql_error(conn->getRawConnection()) << "\n";
-                std::cerr << "While executing: " << lastStatement << "\n";
+                utils::SingletonLogger::instance().logMeta(
+                    utils::SingletonLogger::MessageCode::ERROR,
+                    std::string{"Failed to execute SQL: "} + mysql_error(conn->getRawConnection()),
+                    __FILE__,
+                    __LINE__,
+                    __func__);
+                utils::SingletonLogger::instance().logMeta(
+                    utils::SingletonLogger::MessageCode::ERROR,
+                    "While executing: " + lastStatement,
+                    __FILE__,
+                    __LINE__,
+                    __func__);
                 return false;
             }
         }
 
-        std::cout << "SQL script executed successfully.\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "SQL script executed successfully.",
+            __FILE__,
+            __LINE__,
+            __func__);
         return true;
     }
 

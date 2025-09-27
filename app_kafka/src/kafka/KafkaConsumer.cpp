@@ -1,8 +1,9 @@
 #include "KafkaConsumer.h"
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
+
+#include "utils/log/singletonLogger.h"
 
 namespace kafka
 {
@@ -78,7 +79,12 @@ namespace kafka
             throw std::runtime_error("Failed to start Kafka consumer: " + RdKafka::err2str(startResult));
         }
 
-        std::clog << "[KafkaConsumer] Connected to topic '" << topics << "'\n";
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "[KafkaConsumer] Connected to topic '" + topics + "'",
+            __FILE__,
+            __LINE__,
+            __func__);
     }
 
     KafkaConsumer::~KafkaConsumer()
@@ -141,6 +147,11 @@ namespace kafka
         consumer_.reset();
 
         RdKafka::wait_destroyed(5000);
-        std::clog << "[KafkaConsumer] Shutdown complete\n";
-    }
+        utils::SingletonLogger::instance().logMeta(
+            utils::SingletonLogger::MessageCode::INFO,
+            "[KafkaConsumer] Shutdown complete",
+            __FILE__,
+            __LINE__,
+            __func__);
+}
 }

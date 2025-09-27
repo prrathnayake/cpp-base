@@ -7,6 +7,7 @@
 #include "miner.h"
 #include "../block/block.h"
 #include "../memPool.h"
+#include "utils/log/singletonLogger.h"
 
 void blockchain::Miner::onTranstractionsFromMempool()
 {
@@ -34,7 +35,12 @@ bool blockchain::Miner::isValidateSignature(blockchain::Transtraction transtract
 
 std::string blockchain::Miner::mine(blockchain::Block block)
 {
-    std::cout << "mining.......\n";
+    utils::SingletonLogger::instance().logMeta(
+        utils::SingletonLogger::MessageCode::INFO,
+        "mining.......",
+        __FILE__,
+        __LINE__,
+        __func__);
     std::string hash = getHash(block.toString());
 
     bool loop = true;
