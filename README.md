@@ -57,22 +57,12 @@ After dependency resolution you can configure and build all modules via
 Conan:
 
 ```bash
-conan build . --output-folder=build --build=missing
+python3 cpp-tools/module/scripts/buildBase.py ./cpp-base/
 ```
 
 The build artefacts and generated files will be placed under the `build/`
 directory. You can customise the build type and other settings via the
 standard Conan options, for example `-s build_type=Release`.
-
-### Running unit tests
-
-Each application module may expose its own test targets. Once the build
-completes you can execute CTest from the generated build directory:
-
-```bash
-cd build
-ctest --output-on-failure
-```
 
 ## Repository layout
 
@@ -103,7 +93,7 @@ cpp-base/
 
 Issues and contributions are welcome. Please open a GitHub issue to report
 bugs or discuss feature requests. When submitting pull requests, ensure the
-CI pipeline (if configured) passes and add tests for new behaviour.
+CI pipeline (if configured) passes and adds tests forthe  new behaviour.
 
 ## License
 
