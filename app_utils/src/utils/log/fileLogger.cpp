@@ -1,12 +1,12 @@
 #include "fileLogger.h"
-#include <iostream>
+
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <fcntl.h>
 #include <unistd.h>
-#include <filesystem>
 #include <sys/file.h> // for flock
 
-#include "fileLogger.h"
 #include "../chrono/time.h"
 
 namespace fs = std::filesystem;
@@ -27,19 +27,20 @@ utils::FileLogger::~FileLogger() {}
 
 void utils::FileLogger::log(MessageCode level, const std::string &message)
 {
-    print(levelToString(level), message);
+    const std::string formatted = utils::Time::logTime() + " [" + levelToString(level) + "] " + message;
+    print(formatted);
 }
 
 void utils::FileLogger::logMeta(MessageCode level, const std::string &message,
                                 const char *file, int line, const char *func)
 {
-    std::string metadata = std::string(file) + ":" + std::to_string(line) +
-                           " in " + func;
-    std::string full_message = utils::Time::logTime() +" [" + levelToString(level) + "] " + metadata + " | " + message;
-    print(levelToString(level), full_message);
+    const std::string metadata = std::string(file) + ':' + std::to_string(line) +
+                                 " in " + func;
+    const std::string formatted = utils::Time::logTime() + " [" + levelToString(level) + "] " + metadata + " | " + message;
+    print(formatted);
 }
 
-void utils::FileLogger::print(const std::string &levelStr, const std::string &message)
+void utils::FileLogger::print(const std::string &message)
 {
     std::lock_guard<std::mutex> lock(logMutex);
 
@@ -58,7 +59,7 @@ void utils::FileLogger::print(const std::string &levelStr, const std::string &me
         return;
     }
 
-    std::string full_message = message + "\n";
+    const std::string full_message = message + '\n';
     if (write(fd, full_message.c_str(), full_message.size()) == -1)
     {
         perror("write");

@@ -1,10 +1,10 @@
 #pragma once
-#include <iostream>
-#include <fstream>
+#include <string>
 
-namespace utils{
-    class Logger{
-        public:
-            virtual void info(std::string message) = 0;
+namespace utils {
+    class Logger {
+    public:
+        virtual ~Logger() = default;
+        virtual void info(const std::string &message) = 0;
     };
 }

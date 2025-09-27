@@ -1,11 +1,9 @@
 #pragma once
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
-namespace utils
-{
-    class Time
-    {
+namespace utils {
+    class Time {
     private:
         static std::string validTime(int i);
 

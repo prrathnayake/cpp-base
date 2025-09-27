@@ -1,14 +1,11 @@
 #pragma once
-#include <iostream>
-#include <fstream>
+#include <string>
 
 #include "logger.h"
 
-namespace utils
-{
-    class ConsoleLogger : public Logger
-    {
+namespace utils {
+    class ConsoleLogger : public Logger {
     public:
-        void info(std::string message);
+        void info(const std::string &message) override;
     };
 }

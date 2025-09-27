@@ -1,6 +1,9 @@
-#include <iostream>
 #include <chrono>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <thread>
 
 #include "time.h"
 
@@ -31,76 +34,73 @@ uint64_t utils::Time::getEpocTimeInMinutes()
 
 void utils::Time::printNowTime()
 {
-    time_t now = time(0);
-    tm *ltm = localtime(&now);
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t timeValue = std::chrono::system_clock::to_time_t(now);
 
-    std::cout << "Year:" << 1900 + ltm->tm_year << std::endl;
-    std::cout << "Month: " << 1 + ltm->tm_mon << std::endl;
-    std::cout << "Day: " << ltm->tm_mday << std::endl;
-    std::cout << "Time: " << 5 + ltm->tm_hour << ":";
-    std::cout << 30 + ltm->tm_min << ":";
-    std::cout << ltm->tm_sec << std::endl;
+    std::tm tmSnapshot{};
+#if defined(_WIN32)
+    localtime_s(&tmSnapshot, &timeValue);
+#else
+    localtime_r(&timeValue, &tmSnapshot);
+#endif
+
+    std::cout << std::put_time(&tmSnapshot, "%Y-%m-%d %H:%M:%S") << std::endl;
 }
 
 void utils::Time::holdSeconds(int secs)
 {
-    long long int pre = utils::Time::getEpocTimeInMilliseconds();
-    bool hold = true;
-    while (hold)
+    if (secs <= 0)
     {
-        long long int now = utils::Time::getEpocTimeInMilliseconds();
-        if (now == (pre + (secs * 1000)))
-        {
-            hold = false;
-        }
+        return;
     }
+
+    std::this_thread::sleep_for(std::chrono::seconds(secs));
 }
 
 void utils::Time::holdMiliseconds(int miliseconds)
 {
-    long long int pre = utils::Time::getEpocTimeInMicroseconds();
-    bool hold = true;
-    while (hold)
+    if (miliseconds <= 0)
     {
-        long long int now = utils::Time::getEpocTimeInMicroseconds();
-        if (now == (pre + (miliseconds * 1000)))
-        {
-            hold = false;
-        }
+        return;
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
 }
 
 std::string utils::Time::validTime(int i)
 {
-    std::string str;
-    if (i < 10)
+    if (i < 0)
     {
-        return str = "00" + std::to_string(i);
+        i = 0;
     }
-    else if (i < 100)
-    {
-        return str = "0" + std::to_string(i);
-    }
-    else
-    {
-        return str = std::to_string(i);
-    }
+
+    std::ostringstream stream;
+    stream << std::setfill('0') << std::setw(3) << i;
+    return stream.str();
 }
 
 std::string utils::Time::logTime()
 {
-    time_t now = time(0);
-    struct tm tstruct;
-    char log[80];
-    tstruct = *localtime(&now);
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t timeValue = std::chrono::system_clock::to_time_t(now);
 
-    strftime(log, sizeof(log), "%Y-%m-%d %T", &tstruct);
+    std::tm tmSnapshot{};
+#if defined(_WIN32)
+    localtime_s(&tmSnapshot, &timeValue);
+#else
+    localtime_r(&timeValue, &tmSnapshot);
+#endif
 
-    int mili = getEpocTimeInMilliseconds() % 1000;
-    int micro = getEpocTimeInMicroseconds() % 1000;
-    int nano = getEpocTimeInNanoseconds() % 1000;
+    std::ostringstream logStream;
+    logStream << std::put_time(&tmSnapshot, "%Y-%m-%d %T");
 
-    std::string time = "[" + std::string(log) + ":" + validTime(mili) + ":" + validTime(micro) + ":" + validTime(nano) + "]";
+    const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch());
+    const auto nanosCount = nanos.count();
+    const int milli = static_cast<int>((nanosCount / 1'000'000) % 1000);
+    const int micro = static_cast<int>((nanosCount / 1'000) % 1000);
+    const int nano = static_cast<int>(nanosCount % 1000);
 
-    return time;
+    std::ostringstream result;
+    result << '[' << logStream.str() << ':' << validTime(milli) << ':' << validTime(micro) << ':' << validTime(nano) << ']';
+    return result.str();
 }

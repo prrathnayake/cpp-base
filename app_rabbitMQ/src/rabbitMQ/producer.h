@@ -1,5 +1,5 @@
 #pragma once
-#include "iostream"
+#include <iostream>
 #include <AMQPcpp.h>
 
 namespace rabbitMQ
@@ -12,7 +12,11 @@ namespace rabbitMQ
 
     public:
         RabbitMQprocuder();
-        void produceMessage(std::string url, std::string exchange, std::string queue, std::string message, std::string key);
+        void produceMessage(const std::string &url,
+                            const std::string &exchange,
+                            const std::string &queue,
+                            const std::string &message,
+                            const std::string &key);
         ~RabbitMQprocuder();
     };
 }
