@@ -1,0 +1,17 @@
+cpp-base
+Copyright (c) 2024 cpp-base contributors
+
+This product bundles or integrates the following third-party components.
+The original authors retain their respective copyrights.
+
+- librdkafka (https://github.com/confluentinc/librdkafka) — BSD 2-Clause License
+- rabbitmq-c (https://github.com/alanxz/rabbitmq-c) — MIT License
+- AMQP-CPP (https://github.com/CopernicaMarketingSoftware/AMQP-CPP) — Apache License 2.0
+- H3 (https://github.com/uber/h3) — Apache License 2.0
+- OpenSSL (https://github.com/openssl/openssl) — OpenSSL License and SSLeay License
+- PostgreSQL (https://www.postgresql.org/) — PostgreSQL License
+- MySQL Client Library (https://dev.mysql.com/downloads/connector/c/) — GPLv2 with FOSS Exception
+- SQLite (https://www.sqlite.org/) — Public Domain
+
+You must comply with the licenses listed above when distributing binaries
+or source code derived from this project.
