@@ -7,6 +7,8 @@ file(GLOB files
      "*/*.cpp"
 )
 
+find_package(app_utils REQUIRED CONFIG)
+
 find_package(PkgConfig REQUIRED)
 
 # Find SQLite3 via pkg-config
@@ -49,7 +51,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SQLITE3_LIBRARIES}
     ${MYSQLCLIENT_LIB}
     ${POSTGRESQL_LIBRARIES}
-    app_utils
+    app_utils::app_utils
 )
 
 # Install headers and library

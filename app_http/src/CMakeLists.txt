@@ -8,6 +8,8 @@ file(GLOB files
      "*/*.cpp"
 )
 
+find_package(app_utils REQUIRED CONFIG)
+
 # First check the bundled copy that lives inside this repository so the
 # library can build even when the system doesn't provide `httplib.h`.
 set(_cppbase_httplib_hints
@@ -23,7 +25,7 @@ if(NOT HTTPLIB_INCLUDE_DIR)
     add_library(${PROJECT_NAME} INTERFACE)
     target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(${PROJECT_NAME} INTERFACE APP_HTTP_MISSING_DEPENDENCIES)
-    target_link_libraries(${PROJECT_NAME} INTERFACE app_utils)
+    target_link_libraries(${PROJECT_NAME} INTERFACE app_utils::app_utils)
     return()
 endif()
 
@@ -37,7 +39,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        app_utils
+        app_utils::app_utils
 )
 
 install(

@@ -9,3 +9,10 @@ class AuthRecipe(ConanFile):
         base.name = "app_auth"
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "auth/*"
+
+    def requirements(self):
+        try:
+            super().requirements()
+        except AttributeError:
+            pass
+        self.requires("app_utils/1.0@pasan/testing")

@@ -11,4 +11,11 @@ class rabbitMQRecipe(ConanFile):
         base.version = "1.0"
         base.exports_sources = "CMakeLists.txt", "rabbitMQ/*"
 
+    def requirements(self):
+        try:
+            super().requirements()
+        except AttributeError:
+            pass
+        self.requires("app_utils/1.0@pasan/testing")
+
  

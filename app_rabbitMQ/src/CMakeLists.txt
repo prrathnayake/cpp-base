@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE files
      "${CMAKE_CURRENT_SOURCE_DIR}/rabbitMQ/*.cpp")
 
+find_package(app_utils REQUIRED CONFIG)
 find_package(rabbitmq-c QUIET)
 find_library(AMQP_CPP_LIBRARY NAMES amqpcpp PATHS /usr/local/lib /usr/lib /usr/lib64 /usr/local/lib64)
 find_path(AMQP_CPP_INCLUDE_DIR NAMES amqpcpp.h PATHS /usr/local/include /usr/include)
@@ -18,9 +19,7 @@ if(NOT rabbitmq-c_FOUND OR NOT AMQP_CPP_LIBRARY OR NOT AMQP_CPP_INCLUDE_DIR)
     add_library(${PROJECT_NAME} INTERFACE)
     target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(${PROJECT_NAME} INTERFACE APP_RABBITMQ_MISSING_DEPENDENCIES)
-    if(TARGET app_utils)
-        target_link_libraries(${PROJECT_NAME} INTERFACE app_utils)
-    endif()
+    target_link_libraries(${PROJECT_NAME} INTERFACE app_utils::app_utils)
     return()
 endif()
 
@@ -35,7 +34,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         rabbitmq::rabbitmq
         ${AMQP_CPP_LIBRARY}
-        app_utils
+        app_utils::app_utils
 )
 
 install(
