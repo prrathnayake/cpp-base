@@ -8,7 +8,15 @@ file(GLOB files
      "*/*.cpp"
 )
 
-find_path(HTTPLIB_INCLUDE_DIR httplib.h PATHS /usr/include /usr/local/include)
+# First check the bundled copy that lives inside this repository so the
+# library can build even when the system doesn't provide `httplib.h`.
+set(_cppbase_httplib_hints
+    "${CMAKE_CURRENT_SOURCE_DIR}/http"
+    /usr/include
+    /usr/local/include
+)
+
+find_path(HTTPLIB_INCLUDE_DIR httplib.h PATHS ${_cppbase_httplib_hints})
 
 if(NOT HTTPLIB_INCLUDE_DIR)
     message(WARNING "httplib.h not found; building a header-only stub for app_http")
@@ -21,7 +29,11 @@ endif()
 
 add_library(${PROJECT_NAME} SHARED ${files})
 
-target_include_directories(${PROJECT_NAME} PUBLIC include ${HTTPLIB_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/http
+        ${HTTPLIB_INCLUDE_DIR}
+)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
@@ -29,9 +41,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 install(
-    DIRECTORY "${CMAKE_SOURCE_DIR}/http" 
-    DESTINATION "include" 
-    FILES_MATCHING 
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/http"
+    DESTINATION "include"
+    FILES_MATCHING
     PATTERN "*.h"
 )
 
