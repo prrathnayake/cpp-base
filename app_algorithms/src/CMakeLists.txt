@@ -5,13 +5,15 @@ file(GLOB files
      "*/*/*.cpp"
 )
 
+find_package(app_utils REQUIRED CONFIG)
+
 add_library(${PROJECT_NAME} SHARED ${files})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        app_utils
+        app_utils::app_utils
 )
 
 install(

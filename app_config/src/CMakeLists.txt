@@ -13,6 +13,8 @@ if(files STREQUAL "")
     message(WARNING "app_config: no source files were found")
 endif()
 
+find_package(app_utils REQUIRED CONFIG)
+
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
@@ -21,7 +23,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        app_utils
+        app_utils::app_utils
 )
 
 install(

@@ -8,12 +8,13 @@ file(GLOB files
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
+find_package(app_utils REQUIRED CONFIG)
 find_package(OpenSSL REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         OpenSSL::Crypto
-        app_utils
+        app_utils::app_utils
 )
 
 install(

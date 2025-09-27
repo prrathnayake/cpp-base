@@ -14,6 +14,7 @@ if(files STREQUAL "")
 endif()
 
 find_package(OpenSSL REQUIRED)
+find_package(app_utils REQUIRED CONFIG)
 
 add_library(${PROJECT_NAME} SHARED ${files})
 target_include_directories(${PROJECT_NAME}
@@ -24,7 +25,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         OpenSSL::Crypto
-        app_utils
+        app_utils::app_utils
 )
 
 install(
